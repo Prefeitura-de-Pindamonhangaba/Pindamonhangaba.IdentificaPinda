@@ -1,11 +1,12 @@
-# Nginx Proxy Manager na mesma VM: upstream pelo alias exclusivo, sem porta pública.
+# Nginx Proxy Manager na mesma VM: HTTP no upstream; HTTPS termina no proxy.
 # Combine com compose.yml. O PostgreSQL permanece externo em production.
 x-production-trust: &production-trust
   NODE_EXTRA_CA_CERTS: /run/secrets/postgres-root.crt
 
 services:
   app:
-    ports: !reset []
+    ports: !override
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-3000}:3000"
     environment: *production-trust
     networks:
       frontend: {}
