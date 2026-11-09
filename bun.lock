@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "pinda-dados",
+      "name": "identifica-pinda",
       "dependencies": {
         "@better-auth/drizzle-adapter": "^1.7.12",
         "better-auth": "^1.7.12",

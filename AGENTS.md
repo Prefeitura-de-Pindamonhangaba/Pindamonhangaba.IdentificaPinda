@@ -1,12 +1,12 @@
-# AGENTS.md — Pinda Dados
+# AGENTS.md — Identifica Pinda
 
 ## 1. Identidade e objetivo
 
-**Projeto:** Pinda Dados  
+**Projeto:** Identifica Pinda
 **Organização:** Prefeitura Municipal de Pindamonhangaba  
 **Área responsável:** Secretaria de Tecnologia, Inovação e Projetos (SETIP) — Departamento de Sistemas de Informação (DSI)
 
-O **Pinda Dados** é uma plataforma web interna destinada à consulta e integração de dados cadastrais de pessoas físicas e jurídicas, provenientes de fontes oficiais internas e externas.
+O **Identifica Pinda** é uma plataforma web interna destinada à consulta e integração de dados cadastrais de pessoas físicas e jurídicas, provenientes de fontes oficiais internas e externas.
 
 O sistema deverá oferecer uma interface única, segura e padronizada para servidores municipais autorizados, especialmente aqueles envolvidos em atividades de fiscalização e gestão cadastral.
 
@@ -89,7 +89,7 @@ Regras:
 
 ## 3. Arquitetura MVC modular
 
-O Pinda Dados será desenvolvido como um **monólito MVC modular**, utilizando o Next.js para roteamento e renderização.
+O Identifica Pinda será desenvolvido como um **monólito MVC modular**, utilizando o Next.js para roteamento e renderização.
 
 As responsabilidades deverão permanecer separadas.
 
@@ -189,7 +189,7 @@ O Next.js deverá atuar como camada de roteamento, mantendo os arquivos em `app/
 Estrutura inicial recomendada:
 
 ```text
-pinda-dados/
+identifica-pinda/
 ├── AGENTS.md
 ├── src/
 │   ├── app/
@@ -252,7 +252,7 @@ Não criar diretórios vazios apenas para completar a estrutura.
 
 ## 5. Integrações e fontes de dados
 
-O Pinda Dados deverá permitir múltiplas fontes cadastrais, mantendo suas integrações independentes.
+O Identifica Pinda deverá permitir múltiplas fontes cadastrais, mantendo suas integrações independentes.
 
 ### Regras arquiteturais
 
@@ -276,7 +276,7 @@ A consolidação de dados de diferentes fontes deverá preservar diferenças de 
 
 ## 6. Integração Infoconv — SERPRO
 
-O Infoconv será a primeira fonte de dados do Pinda Dados.
+O Infoconv será a primeira fonte de dados do Identifica Pinda.
 
 Referência oficial:
 
@@ -363,7 +363,7 @@ A arquitetura também deverá possibilitar restrições futuras por secretaria, 
 
 ## 8. Segurança, privacidade e LGPD
 
-O Pinda Dados manipulará dados pessoais e deverá aplicar segurança desde o início.
+O Identifica Pinda manipulará dados pessoais e deverá aplicar segurança desde o início.
 
 ### Requisitos obrigatórios
 
@@ -452,7 +452,7 @@ Utilizar PostgreSQL e Drizzle ORM.
 
 ## 11. Identidade visual
 
-O Pinda Dados deverá seguir a identidade visual institucional da Prefeitura Municipal de Pindamonhangaba.
+O Identifica Pinda deverá seguir a identidade visual institucional da Prefeitura Municipal de Pindamonhangaba.
 
 ### Paleta oficial obrigatória
 
@@ -587,7 +587,7 @@ Exemplo ilustrativo:
 
 ```env
 NODE_ENV=development
-DATABASE_URL=postgresql://user:password@localhost:5432/pinda_dados
+DATABASE_URL=postgresql://user:password@localhost:5432/identifica_pinda
 APP_URL=http://localhost:3000
 
 # Configurações da integração Infoconv
@@ -890,7 +890,7 @@ Todo agente deverá:
 
 ## 22. Diretriz final
 
-O **Pinda Dados** deverá permanecer um monólito MVC modular, simples, seguro, extensível e sustentável.
+O **Identifica Pinda** deverá permanecer um monólito MVC modular, simples, seguro, extensível e sustentável.
 
 A plataforma deverá começar pela integração Infoconv, mas sua arquitetura deverá permitir a incorporação de novas fontes cadastrais sem reestruturações significativas.
 

@@ -2,16 +2,16 @@
 # Ajuste os caminhos para o certificado e a chave já existentes no servidor.
 server {
     listen 80;
-    server_name dados.pindamonhangaba.sp.gov.br;
-    return 301 https://dados.pindamonhangaba.sp.gov.br$request_uri;
+    server_name identifica.pindamonhangaba.sp.gov.br;
+    return 301 https://identifica.pindamonhangaba.sp.gov.br$request_uri;
 }
 
 server {
     listen 443 ssl;
-    server_name dados.pindamonhangaba.sp.gov.br;
+    server_name identifica.pindamonhangaba.sp.gov.br;
 
-    ssl_certificate /etc/pki/tls/certs/pinda-dados-fullchain.pem;
-    ssl_certificate_key /etc/pki/tls/private/pinda-dados.key;
+    ssl_certificate /etc/pki/tls/certs/identifica-pinda-fullchain.pem;
+    ssl_certificate_key /etc/pki/tls/private/identifica-pinda.key;
     ssl_protocols TLSv1.2 TLSv1.3;
 
     proxy_http_version 1.1;

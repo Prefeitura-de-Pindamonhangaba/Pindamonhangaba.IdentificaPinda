@@ -6,7 +6,7 @@ O arquivo `compose.rede-local.yml` acrescenta o proxy HTTPS e configura a confia
 
 ## Certificados
 
-Pasta no host: `/opt/Pindamonhangaba.DadosPinda/certificates`.
+Pasta proposta para novas instalações: `/opt/identifica-pinda/certificates`. Em instalações existentes, preserve o caminho configurado em `INFOCONV_CERTIFICATES_DIR`.
 
 - `PESQUISA_DE_CPF_CNPJ.pem`: certificado Infoconv e chave privada criptografada; a senha fica em `INFOCONV_CERTIFICATE_PASSPHRASE` no `.env`.
 - `infoconv-ca.pem`: cadeia de confianca da integracao Infoconv.
@@ -30,23 +30,23 @@ O Infoconv permanece habilitado conforme solicitado. O pre-deploy valida o PEM e
 
 O certificado atualizado foi validado em 28/10/2026, com validade ate 12/06/2027. A chave privada e a senha configurada passaram na verificacao do pre-deploy. O Infoconv permaneceu habilitado; nenhuma consulta real ao SERPRO foi feita durante a validacao.
 
-O banco foi iniciado, as migracoes aplicadas e a conta administradora local foi provisionada. As credenciais estao em `.local/acesso-dadospinda.json` (modo 600). O primeiro `.env` anterior ao deploy foi preservado em `.local/env.before-deploy` (modo 600).
+O banco local e as migrações são preparados pelo Compose em desenvolvimento. Usuários e papéis são administrados exclusivamente no Keycloak. Preserve os arquivos privados de instalações anteriores; eles não são renomeados automaticamente.
 
 A aplicacao, o banco e o proxy foram iniciados. Foram validados por HTTPS: tela de login, health check, login local, sessao administrativa, acesso a administracao de usuarios e logout. O build, a verificacao TypeScript do build e o lint passaram; os testes unitarios tiveram 49 aprovados, 2 ignorados (exigem banco de testes isolado) e nenhuma falha.
 
-O servico systemd `dadospinda-rede-interna.service` restringe conexoes encaminhadas para a publicacao `10.0.0.16:3001` a origem `10.0.0.0/23`. A regra e reaplicada ao iniciar o Docker. Nao foi feita consulta real ao Infoconv.
+O servico systemd `identifica-pinda-rede-interna.service` restringe conexoes encaminhadas para a publicacao `10.0.0.16:3001` a origem `10.0.0.0/23`. A regra e reaplicada ao iniciar o Docker. Nao foi feita consulta real ao Infoconv.
 
 Os modelos desse servico ficam em `deploy/rede-interna/`. Revise o IP e a rede antes de usar em outro servidor. Para instalar como root:
 
 ```sh
-install -m 755 deploy/rede-interna/dadospinda-rede-interna /usr/local/sbin/
-install -m 644 deploy/rede-interna/dadospinda-rede-interna.service /etc/systemd/system/
+install -m 755 deploy/rede-interna/identifica-pinda-rede-interna /usr/local/sbin/
+install -m 644 deploy/rede-interna/identifica-pinda-rede-interna.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable --now dadospinda-rede-interna.service
+systemctl enable --now identifica-pinda-rede-interna.service
 ```
 
 ## Keycloak
 
-O `.env` usa o cliente confidencial `PindaDados` no realm `pindamonhangaba`, com issuer `https://10.0.0.16:8081/realms/pindamonhangaba`. O callback exato e `https://10.0.0.16:3001/api/auth/callback/keycloak`, e a origem autorizada e `https://10.0.0.16:3001`. O cliente usa Authorization Code com PKCE S256; implicit flow, direct access grants e service accounts estao desabilitados.
+O `.env` define o ID do cliente confidencial em `KEYCLOAK_CLIENT_ID` no realm `pindamonhangaba`, com issuer `https://10.0.0.16:8081/realms/pindamonhangaba`. O callback exato e `https://10.0.0.16:3001/api/auth/callback/keycloak`, e a origem autorizada e `https://10.0.0.16:3001`. O cliente usa Authorization Code com PKCE S256; implicit flow, direct access grants e service accounts estao desabilitados.
 
 A gestão de acessos passou a ser centralizada no Keycloak: configure os client roles e o mapper no ID token conforme [Keycloak](keycloak.md). Vínculos históricos são preservados, mas não são necessários novos comandos de vinculação. Nomes de usuário não concedem privilégios; os papéis do cliente determinam o acesso. A homologação dessa gestão deve ser repetida na instalação real após a atualização.

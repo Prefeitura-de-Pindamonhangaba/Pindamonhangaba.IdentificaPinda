@@ -1,6 +1,6 @@
-# Identidade visual — referência inicial Pinda Dados
+# Identidade visual — referência inicial Identifica Pinda
 
-O Pinda Dados inaugura uma linguagem visual para os sistemas municipais: institucional, reconhecível, acolhedora e apropriada à leitura de dados. Esta implementação é uma referência inicial para avaliação e evolução, sem presumir adoção formal por todos os órgãos.
+O Identifica Pinda inaugura uma linguagem visual para os sistemas municipais: institucional, reconhecível, acolhedora e apropriada à leitura de dados. Esta implementação é uma referência inicial para avaliação e evolução, sem presumir adoção formal por todos os órgãos.
 
 ## Fontes e marca
 

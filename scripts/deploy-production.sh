@@ -13,7 +13,7 @@ deploy_dir="$(realpath "$DEPLOY_DIR")"
 for reference in "${APP_IMAGE:-}" "${TOOLS_IMAGE:-}"; do
   [[ "$reference" =~ ^ghcr\.io/[a-z0-9][a-z0-9/._-]*@sha256:[a-f0-9]{64}$ ]] || fail "use imagens GHCR identificadas por digest SHA-256."
 done
-project="${DEPLOY_PROJECT:-pinda-dados}"
+project="${DEPLOY_PROJECT:-identifica-pinda}"
 [[ "$project" =~ ^[a-z0-9][a-z0-9_-]*$ ]] || fail "DEPLOY_PROJECT inválido."
 case "${DEPLOY_PLATFORM:-}" in
   linux/amd64) [[ "$(uname -m)" = x86_64 ]] || fail "imagem amd64 incompatível com o runner." ;;

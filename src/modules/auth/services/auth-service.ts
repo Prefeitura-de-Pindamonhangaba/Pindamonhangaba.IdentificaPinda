@@ -19,7 +19,7 @@ export function createAuthService(
   const audit = createAuditRepository(database);
   const identities = createKeycloakIdentityRepository(database);
   return betterAuth({
-    appName: "Pinda Dados",
+    appName: "Identifica Pinda",
     baseURL: env.APP_URL,
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: [env.APP_URL],

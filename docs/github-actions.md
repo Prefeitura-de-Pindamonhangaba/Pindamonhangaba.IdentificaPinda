@@ -8,7 +8,7 @@ Para a instalação da Prefeitura em AlmaLinux amd64 com Nginx, consulte o [rote
 
 - `CI`: pull requests e pushes na `main`; formatação, lint, testes Bun, build, tipagem e Playwright/Chromium com PostgreSQL isolado. Não utiliza segredos de produção nem runner interno.
 - `Produção`: execução manual em **Actions → Produção → Run workflow**, selecionando `main`. Repete CI, constrói as imagens de aplicação e ferramentas e publica no GHCR usando o token temporário do GitHub.
-- O deploy permanece **desabilitado por padrão**. Só executa quando a variável de repositório `PRODUCTION_DEPLOY_ENABLED` for `true`, no environment `production` e no runner com os labels `self-hosted`, `Linux` e `pinda-dados-production`.
+- O deploy permanece **desabilitado por padrão**. Só executa quando a variável de repositório `PRODUCTION_DEPLOY_ENABLED` for `true`, no environment `production` e no runner com os labels `self-hosted`, `Linux` e `identifica-pinda-production`.
 - A ativação usa digests SHA-256 das imagens geradas pelo mesmo workflow. Não usa `latest` nem compila no servidor. Uma execução por vez; deploy em andamento não é cancelado por outro disparo.
 
 Publicar imagens não significa publicar o sistema. O resumo do workflow informa quando a etapa de servidor está desabilitada.
@@ -17,15 +17,15 @@ Publicar imagens não significa publicar o sistema. O resumo do workflow informa
 
 Confirme primeiro sistema operacional Linux, arquitetura (`amd64` ou `arm64`), domínio HTTPS e se o runner ficará no próprio host dos containers. Instale Docker, Docker Compose **2.24.4 ou posterior**, Bash, Python 3 e utilitários `flock`/`realpath`. Mantenha o runner atualizado para executar as versões das actions fixadas por SHA.
 
-Na organização, crie um **runner group** chamado `pinda-dados-production`, limitado a este repositório e exclusivamente ao workflow `Prefeitura-de-Pindamonhangaba/Pindamonhangaba.DadosPinda/.github/workflows/production.yml@refs/heads/main`. Permita o acesso do repositório público somente com essa restrição de workflow. Não libere todos os workflows nem a CI de PRs: código de forks não deve executar na máquina que acessa a rede e os segredos de produção.
+Na organização, crie um **runner group** chamado `identifica-pinda-production`, limitado a este repositório e exclusivamente ao workflow `Prefeitura-de-Pindamonhangaba/Pindamonhangaba.IdentificaPinda/.github/workflows/production.yml@refs/heads/main`. Permita o acesso do repositório público somente com essa restrição de workflow. Não libere todos os workflows nem a CI de PRs: código de forks não deve executar na máquina que acessa a rede e os segredos de produção.
 
-Cadastre o runner Linux na **organização**, atribua-o a esse grupo e adicione também o label `pinda-dados-production`; siga as instruções atuais em **Settings → Actions → Runners → New self-hosted runner**. Instale como serviço e mantenha-o atualizado. O usuário do runner precisa acessar Docker e a pasta privada da aplicação. O workflow seleciona tanto o grupo quanto os labels.
+Cadastre o runner Linux na **organização**, atribua-o a esse grupo e adicione também o label `identifica-pinda-production`; siga as instruções atuais em **Settings → Actions → Runners → New self-hosted runner**. Instale como serviço e mantenha-o atualizado. O usuário do runner precisa acessar Docker e a pasta privada da aplicação. O workflow seleciona tanto o grupo quanto os labels.
 
 Se a organização não permitir restringir o grupo ao workflow/referência acima, não cadastre um runner persistente diretamente neste repositório público. Nesse caso, vamos definir juntos uma implantação por repositório privado de operações ou outra solução isolada antes de habilitar a produção. A restrição do environment não substitui a restrição do runner group.
 
 O host precisa alcançar GitHub/GHCR e o PostgreSQL externo. Não é necessário abrir SSH ao GitHub. O proxy HTTPS deve encaminhar para a porta local da aplicação, normalmente `127.0.0.1:3000`.
 
-Provisione uma pasta fora do workspace do runner, por exemplo `/opt/pinda-dados`. Crie nela `.env` a partir do modelo, configure `COMPOSE_PROFILES=production`, `DATABASE_URL` externa, `APP_URL` HTTPS e os segredos. Mantenha o arquivo com permissões restritas (por exemplo, `0600` para seu proprietário, garantindo leitura ao usuário do runner). Guarde certificados em `certificates/` dentro dessa pasta, ou informe caminho absoluto em `INFOCONV_CERTIFICATES_DIR`.
+Provisione uma pasta fora do workspace do runner, por exemplo `/opt/identifica-pinda`. Crie nela `.env` a partir do modelo, configure `COMPOSE_PROFILES=production`, `DATABASE_URL` externa, `APP_URL` HTTPS e os segredos. Mantenha o arquivo com permissões restritas (por exemplo, `0600` para seu proprietário, garantindo leitura ao usuário do runner). Guarde certificados em `certificates/` dentro dessa pasta, ou informe caminho absoluto em `INFOCONV_CERTIFICATES_DIR`.
 
 Credenciais e certificados **permanecem no servidor**; não são copiados para checkout, artefatos, imagens ou logs. Não cole senhas, connection strings ou chaves privadas no chat. O workflow usa `GITHUB_TOKEN` apenas para publicar/baixar imagens, com permissões limitadas por job, e encerra o login no registry ao finalizar.
 
@@ -38,10 +38,10 @@ Em **Settings → Secrets and variables → Actions → Variables**, configure v
 | Nome                         | Valor                                                                                               |
 | ---------------------------- | --------------------------------------------------------------------------------------------------- |
 | `PRODUCTION_DEPLOY_ENABLED`  | Inicialmente `false`; mudar para `true` somente após preparar o servidor                            |
-| `PRODUCTION_DEPLOY_DIR`      | Pasta absoluta provisionada no servidor; exemplo `/opt/pinda-dados`                                 |
+| `PRODUCTION_DEPLOY_DIR`      | Pasta absoluta provisionada no servidor; exemplo `/opt/identifica-pinda`                            |
 | `PRODUCTION_URL`             | URL HTTPS pública, usada na identificação do environment; não substitui APP_URL no .env do servidor |
 | `PRODUCTION_PLATFORM`        | `linux/amd64` (padrão) ou `linux/arm64`; deve corresponder ao runner de produção                    |
-| `PRODUCTION_COMPOSE_PROJECT` | Nome estável da instalação, padrão `pinda-dados`                                                    |
+| `PRODUCTION_COMPOSE_PROJECT` | Nome estável da instalação, padrão `identifica-pinda`                                               |
 
 A compilação usa runner hospedado no GitHub compatível com a arquitetura escolhida. O workflow suporta imagens Linux amd64 e arm64; só é construída a arquitetura selecionada.
 

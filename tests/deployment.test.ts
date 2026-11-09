@@ -8,7 +8,7 @@ const base = {
   BETTER_AUTH_SECRET: "a".repeat(48),
   POSTGRES_USER: "pinda",
   POSTGRES_PASSWORD: "senha:@/?#",
-  POSTGRES_DB: "pinda_dados",
+  POSTGRES_DB: "identifica_pinda",
   DATABASE_URL: "postgresql://ignored:ignored@external.invalid/production",
 };
 

@@ -23,7 +23,7 @@ export function AdminUsersView({
       </div>
       <p>
         Os registros abaixo são criados automaticamente no primeiro login
-        autorizado. O papel é sincronizado com o cliente do Pinda Dados no
+        autorizado. O papel é sincronizado com o cliente do Identifica Pinda no
         Keycloak.
       </p>
       <div className="table-scroll">

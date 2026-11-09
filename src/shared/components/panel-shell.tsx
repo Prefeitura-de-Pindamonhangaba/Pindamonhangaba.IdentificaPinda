@@ -22,7 +22,7 @@ export function PanelShell({
       <InstitutionalHeader />
       <div className="panel-bar container">
         <Link className="product-brand" href="/">
-          Pinda Dados<span aria-hidden="true">.</span>
+          Identifica Pinda<span aria-hidden="true">.</span>
         </Link>
         <div className="session-controls">
           <span>{userName}</span>
