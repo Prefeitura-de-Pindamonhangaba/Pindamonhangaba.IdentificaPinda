@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pinda Dados | Prefeitura de Pindamonhangaba",
+  title: "Identifica Pinda | Prefeitura de Pindamonhangaba",
   description: "Plataforma institucional de consulta e integração cadastral.",
   robots: { index: false, follow: false },
 };

@@ -34,12 +34,12 @@ export function InstitutionalFooter() {
       <div className="container footer-content">
         <div>
           <strong>
-            Pinda Dados<span aria-hidden="true">.</span>
+            Identifica Pinda<span aria-hidden="true">.</span>
           </strong>
           <p>Informação integrada para a gestão municipal.</p>
           <a
             className="repository-link"
-            href="https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.DadosPinda"
+            href="https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.IdentificaPinda"
             target="_blank"
             rel="noopener noreferrer"
             referrerPolicy="no-referrer"

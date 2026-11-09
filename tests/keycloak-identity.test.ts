@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { parseKeycloakIdentity } from "../src/modules/auth/services/keycloak-identity";
 const issuer = "https://sso.example.test/realms/pinda";
-test("somente client roles do Pinda Dados concedem acesso", () => {
+test("somente client roles do Identifica Pinda concedem acesso", () => {
   expect(
     parseKeycloakIdentity(
       { iss: issuer, sub: "one", realm_access: { roles: ["admin"] } },

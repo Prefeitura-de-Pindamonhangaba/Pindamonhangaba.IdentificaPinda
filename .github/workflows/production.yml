@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: pinda-dados-production
+  group: identifica-pinda-production
   cancel-in-progress: false
 
 jobs:
@@ -113,8 +113,8 @@ jobs:
     needs: [configuration, images]
     if: needs.configuration.outputs.deploy_enabled == 'true'
     runs-on:
-      group: pinda-dados-production
-      labels: [self-hosted, Linux, pinda-dados-production]
+      group: identifica-pinda-production
+      labels: [self-hosted, Linux, identifica-pinda-production]
     timeout-minutes: 15
     environment:
       name: production
@@ -142,7 +142,7 @@ jobs:
       - name: Isolar credenciais temporárias do registry
         shell: bash
         run: |
-          printf 'DOCKER_CONFIG=%s/pinda-dados-docker-%s-%s\n' "$RUNNER_TEMP" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
+          printf 'DOCKER_CONFIG=%s/identifica-pinda-docker-%s-%s\n' "$RUNNER_TEMP" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
       - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
@@ -151,7 +151,7 @@ jobs:
       - name: Pré-deploy e ativação
         env:
           DEPLOY_DIR: ${{ vars.PRODUCTION_DEPLOY_DIR }}
-          DEPLOY_PROJECT: ${{ vars.PRODUCTION_COMPOSE_PROJECT || 'pinda-dados' }}
+          DEPLOY_PROJECT: ${{ vars.PRODUCTION_COMPOSE_PROJECT || 'identifica-pinda' }}
           DEPLOY_PLATFORM: ${{ needs.configuration.outputs.platform }}
           RELEASE_SHA: ${{ github.sha }}
           RELEASE_ID: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}

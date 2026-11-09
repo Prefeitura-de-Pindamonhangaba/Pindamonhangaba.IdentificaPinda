@@ -1,16 +1,16 @@
 {
-  "name": "pinda-dados",
+  "name": "identifica-pinda",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "description": "Plataforma municipal de consulta e integração cadastral com controle de acesso e auditoria.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.DadosPinda.git"
+    "url": "git+https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.IdentificaPinda.git"
   },
-  "homepage": "https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.DadosPinda#readme",
+  "homepage": "https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.IdentificaPinda#readme",
   "bugs": {
-    "url": "https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.DadosPinda/issues"
+    "url": "https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.IdentificaPinda/issues"
   },
   "packageManager": "bun@1.4.4",
   "scripts": {

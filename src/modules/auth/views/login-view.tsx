@@ -45,7 +45,7 @@ export function LoginView({
         <section className="welcome-hero" aria-labelledby="welcome-title">
           <span className="eyebrow">Dados a serviço da cidade</span>
           <h1 id="welcome-title">
-            Pinda Dados<span aria-hidden="true">.</span>
+            Identifica Pinda<span aria-hidden="true">.</span>
           </h1>
           <p className="introduction">
             Informação integrada para a gestão municipal.

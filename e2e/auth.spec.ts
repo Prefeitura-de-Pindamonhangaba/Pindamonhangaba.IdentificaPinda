@@ -108,7 +108,7 @@ test("apresentação tem apenas Login, redireciona ao SSO e funciona em celular"
 }) => {
   await page.goto("/login");
   await expect(
-    page.getByRole("heading", { name: "Pinda Dados", exact: true }),
+    page.getByRole("heading", { name: "Identifica Pinda", exact: true }),
   ).toBeVisible();
   await expect(page.locator("main button")).toHaveCount(1);
   await expect(page.locator("main input")).toHaveCount(0);

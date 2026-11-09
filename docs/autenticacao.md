@@ -4,7 +4,7 @@ A identidade e a autorização são gerenciadas no Keycloak. Consulte [configura
 
 ## Papéis
 
-Os client roles `viewer`, `operator` e `admin` do cliente definido em `KEYCLOAK_CLIENT_ID` são convertidos para as permissões fixas do Pinda Dados. Papéis do realm e de outros clientes não são aceitos. Quem não tem um papel reconhecido não entra. O nome e o papel são sincronizados a partir do ID token validado, com auditoria; as permissões são verificadas no servidor.
+Os client roles `viewer`, `operator` e `admin` do cliente definido em `KEYCLOAK_CLIENT_ID` são convertidos para as permissões fixas do Identifica Pinda. Papéis do realm e de outros clientes não são aceitos. Quem não tem um papel reconhecido não entra. O nome e o papel são sincronizados a partir do ID token validado, com auditoria; as permissões são verificadas no servidor.
 
 A administração de usuários da aplicação é somente de leitura. Cadastro, bloqueio, senha, recuperação, MFA e concessão ou remoção de papéis ficam no Keycloak. O banco local preserva identificadores e rastreabilidade; não é a fonte de autorização.
 

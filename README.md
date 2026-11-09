@@ -2,13 +2,13 @@
   <img src="public/brand/prefeitura-pindamonhangaba.svg" alt="Prefeitura de Pindamonhangaba" width="300" />
 </p>
 
-# Pinda Dados
+# Identifica Pinda
 
 **Consulta e integração de dados cadastrais para a gestão municipal.**
 
 Plataforma desenvolvida pela Prefeitura Municipal de Pindamonhangaba, por meio da Secretaria de Tecnologia, Inovação e Projetos (SETIP) — Departamento de Sistemas de Informação (DSI). Reúne consultas de CPF/CNPJ, controle de acesso e rastreabilidade em um monólito MVC modular.
 
-[Início rápido](docs/inicio-rapido.md) · [Documentação](docs/README.md) · [Como contribuir](CONTRIBUTING.md) · [Segurança](SECURITY.md) · [Reportar problema](https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.DadosPinda/issues)
+[Início rápido](docs/inicio-rapido.md) · [Documentação](docs/README.md) · [Como contribuir](CONTRIBUTING.md) · [Segurança](SECURITY.md) · [Reportar problema](https://github.com/Prefeitura-de-Pindamonhangaba/Pindamonhangaba.IdentificaPinda/issues)
 
 ## O que a plataforma oferece
 
@@ -24,6 +24,8 @@ Plataforma desenvolvida pela Prefeitura Municipal de Pindamonhangaba, por meio d
 | Identidade institucional   | Paleta oficial, componentes compartilhados e [guia de reutilização](docs/identidade-visual.md) |
 
 A execução local de login, contas e administração não depende de contratar o SERPRO. **Consultas cadastrais reais exigem convênio/contrato, certificado, habilitação e credenciais próprios.** O código não fornece acesso a bases oficiais nem autoriza consultas de dados pessoais. Testes automatizados usam dados fictícios; REST ainda não está implementado.
+
+Para atualizar uma instalação existente, consulte a [orientação de mudança de identidade](docs/renomeacao.md) antes de alterar nomes de projetos, volumes ou caminhos.
 
 ## Executar localmente
 
