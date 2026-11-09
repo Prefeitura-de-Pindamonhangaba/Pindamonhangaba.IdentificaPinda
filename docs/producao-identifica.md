@@ -45,3 +45,9 @@ A conta de bootstrap do Keycloak estava desativada e foi preservada assim. Por o
 O upstream da aplicação usa **HTTP**, mesmo quando o domínio público usa HTTPS. Não configure `https://10.0.0.193:3000` no Proxy Manager: o TLS é terminado no Nginx. O acesso direto por IP serve para conferir disponibilidade; a origem canônica do login permanece o domínio HTTPS definido em `APP_URL`.
 
 Após a solicitação de acesso por IP, a porta foi publicada em `10.0.0.193:3000`, e o upstream do Nginx foi corrigido de HTTPS para HTTP nesse endereço. `/login` e `/api/health` responderam 200 também a partir da estação de operação; a origem HTTPS voltou a responder 200. O domínio público ainda retornava 301 circular nessa conferência.
+
+## Regra HTTPS compatível com o Cloudflare
+
+O redirecionamento circular do domínio foi resolvido no virtual host do Nginx Proxy Manager. O `Force SSL` desse host foi substituído por uma regra que considera o HTTPS informado pelo proxy em `X-Forwarded-Proto`. A configuração preserva o certificado na porta 443, o upstream HTTP em `10.0.0.193:3000`, o cache desabilitado e a proteção dos logs do callback.
+
+Após a alteração, o domínio público respondeu **200** em `/login` e `/api/health`; o acesso público por HTTP respondeu **301** para HTTPS. A configuração passou em `nginx -t` antes da recarga. A regra pressupõe o encaminhamento pelo proxy confiável da instalação. O trecho Cloudflare–origem ainda usa HTTP na configuração atual; para criptografá-lo também, configure Full (strict) por hostname e mantenha o certificado válido na origem. Não altere a zona inteira sem revisar os demais sistemas.
