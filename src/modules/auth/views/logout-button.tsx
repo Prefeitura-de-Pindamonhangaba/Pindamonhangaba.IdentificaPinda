@@ -1,11 +1,10 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { authClient } from "@/shared/lib/auth/client";
 import { useHydrated } from "@/shared/lib/auth/use-hydrated";
+import { notifyBrowserSignOut } from "@/shared/lib/auth/browser-session";
 
 export function LogoutButton() {
-  const router = useRouter();
   const hydrated = useHydrated();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -15,8 +14,8 @@ export function LogoutButton() {
     try {
       const result = await authClient.signOut();
       if (result.error) throw new Error("logout");
-      router.replace("/login");
-      router.refresh();
+      notifyBrowserSignOut();
+      window.location.replace("/login");
     } catch {
       setError("Não foi possível sair. Tente novamente.");
       setPending(false);

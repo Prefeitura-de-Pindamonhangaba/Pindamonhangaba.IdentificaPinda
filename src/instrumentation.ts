@@ -1,7 +1,7 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { startCacheRetention } =
-      await import("@/shared/lib/maintenance/cache-retention");
-    startCacheRetention();
+    const { startDataRetention } =
+      await import("@/shared/lib/maintenance/data-retention");
+    startDataRetention();
   }
 }

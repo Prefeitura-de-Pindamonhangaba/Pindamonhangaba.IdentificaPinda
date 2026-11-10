@@ -50,10 +50,15 @@ export async function runConsultation(
 }
 
 export async function readConsultationAudit(principal: Principal) {
-  return listConsultationAudit(
+  const result = await listConsultationAudit(
     createConsultationRepository(getDatabase()),
     principal,
   );
+  await createAuditRepository(getDatabase()).record(
+    principal.id,
+    "consultations.audit_viewed",
+  );
+  return result;
 }
 
 export async function discloseConsultationResults(
@@ -68,8 +73,9 @@ export async function discloseConsultationResults(
     principal,
     results,
   );
-  await createAuditRepository(getDatabase()).record(
+  await createAuditRepository(getDatabase()).recordDisclosure(
     principal.id,
     format === "csv" ? "consultations.exported" : "consultations.printed",
+    results.map((result) => result.id),
   );
 }

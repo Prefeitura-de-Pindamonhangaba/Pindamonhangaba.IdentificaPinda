@@ -3,6 +3,7 @@ import "server-only";
 import { getAuth } from "@/shared/lib/auth/server";
 import { parseAuthEnvironment } from "@/shared/lib/env";
 import { readJson } from "@/shared/lib/security/request";
+import { projectPublicSession } from "../services/public-session";
 
 const publicEndpoints = new Set([
   "/api/auth/sign-out",
@@ -39,7 +40,13 @@ export async function handleAuthRequest(request: Request) {
           );
       }
     }
-    const response = await getAuth().handler(request);
+    let response = await getAuth().handler(request);
+    if (path === "/api/auth/get-session" && response.ok) {
+      response = Response.json(projectPublicSession(await response.json()), {
+        status: response.status,
+        headers: response.headers,
+      });
+    }
     if (
       request.method === "POST" &&
       path === "/api/auth/sign-out" &&
@@ -48,6 +55,8 @@ export async function handleAuthRequest(request: Request) {
       // O SDK trata falhas de revogação internamente; confirme antes de anunciar saída.
       if (await getAuth().api.getSession({ headers: request.headers }))
         throw new Error("Sessão não revogada.");
+      // Não limpar cookies de todo o domínio: isso encerraria o SSO de outros sistemas.
+      response.headers.set("Clear-Site-Data", '"cache", "storage"');
     }
     response.headers.set("Cache-Control", "no-store");
     return response;

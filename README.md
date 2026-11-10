@@ -51,6 +51,8 @@ Os valores de banco em `.env.example` são exclusivos de desenvolvimento. HTTPS,
 
 Veja [GitHub Actions e produção](docs/github-actions.md) para CI, publicação de imagens e deploy manual em runner próprio. A ativação no servidor permanece desabilitada até configurarmos o ambiente.
 
+Consulte também a [revisão técnica de privacidade e LGPD](docs/privacidade-lgpd.md), com os controles implementados e as decisões institucionais necessárias.
+
 ## Desenvolver e contribuir
 
 **Stack:** Next.js App Router · React · TypeScript strict · Bun · PostgreSQL · Drizzle ORM · Zod · Better Auth.

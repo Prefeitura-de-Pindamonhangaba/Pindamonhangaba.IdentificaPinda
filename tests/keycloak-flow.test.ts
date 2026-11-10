@@ -9,7 +9,7 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { and, eq, inArray } from "drizzle-orm";
 import { createAuthService } from "../src/modules/auth/services/auth-service";
 import { parseAuthEnvironment } from "../src/shared/lib/env";
-import { account, user } from "../src/modules/auth/models/auth-schema";
+import { account, user, session } from "../src/modules/auth/models/auth-schema";
 import { auditEvent } from "../src/modules/audit/models/audit-schema";
 
 const databaseUrl = process.env.KEYCLOAK_TEST_DATABASE_URL;
@@ -248,7 +248,13 @@ identityTest(
           callback,
           cookie,
           response: await auth.handler(
-            new Request(callback, { headers: { cookie, "x-real-ip": ip } }),
+            new Request(callback, {
+              headers: {
+                cookie,
+                "x-real-ip": ip,
+                "user-agent": "fictitious-browser-fingerprint",
+              },
+            }),
           ),
         };
       }
@@ -268,6 +274,13 @@ identityTest(
       expect(principal?.user.id).toBeTruthy();
       expect(principal?.user.id).not.toBe(ids[0]);
       targetId = principal!.user.id;
+      const [storedSession] = await db!
+        .select()
+        .from(session)
+        .where(eq(session.userId, targetId))
+        .limit(1);
+      expect(storedSession.ipAddress).toBeNull();
+      expect(storedSession.userAgent).toBeNull();
       ids.push(targetId);
       expect(principal?.user.email).toEndWith("@identity.invalid");
       expect(principal?.user.role).toBe("operator");

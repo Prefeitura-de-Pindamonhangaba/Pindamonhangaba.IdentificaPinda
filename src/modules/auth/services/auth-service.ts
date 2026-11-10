@@ -10,6 +10,7 @@ import * as schema from "@/modules/auth/models/auth-schema";
 import { createAuditRepository } from "@/modules/audit/models/audit-repository";
 import { createUserRepository } from "@/modules/users/models/user-repository";
 import { parseAuthEnvironment } from "@/shared/lib/env";
+import { AUTH_RATE_LIMIT_WINDOW_SECONDS } from "../models/auth-retention-repository";
 
 export function createAuthService(
   database: PostgresJsDatabase,
@@ -140,9 +141,11 @@ export function createAuthService(
     rateLimit: {
       enabled: true,
       storage: "database",
-      window: 60,
+      window: AUTH_RATE_LIMIT_WINDOW_SECONDS,
       max: 60,
-      customRules: { "/sign-in/social": { window: 60, max: 5 } },
+      customRules: {
+        "/sign-in/social": { window: AUTH_RATE_LIMIT_WINDOW_SECONDS, max: 5 },
+      },
     },
     databaseHooks: {
       session: {
@@ -152,6 +155,9 @@ export function createAuthService(
               throw new APIError("UNAUTHORIZED", {
                 message: "Acesso não autorizado.",
               });
+            // O IP ainda é usado em memória para limitação; não é necessário
+            // persistir IP e impressão do navegador junto à sessão.
+            return { data: { ...data, ipAddress: null, userAgent: null } };
           },
           after: async (data) => {
             await audit.record(data.userId, "session.created");

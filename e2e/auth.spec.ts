@@ -157,6 +157,11 @@ test("SSO assinado cria sessão; saída pelo navegador revoga e audita", async (
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Minha conta" })).toHaveCount(0);
   await expect(page.locator('input[type="password"]')).toHaveCount(0);
+  const publicSession = await page.request.get("/api/auth/get-session");
+  expect(publicSession.status()).toBe(200);
+  const sessionBody = await publicSession.json();
+  expect(Object.keys(sessionBody.session).sort()).toEqual(["expiresAt", "id"]);
+  expect(Object.keys(sessionBody.user).sort()).toEqual(["id", "name"]);
   const cookies = await context.cookies();
   const cookie = cookies.find((item) => item.name.endsWith("session_token"));
   expect(cookie?.httpOnly).toBe(true);
@@ -164,7 +169,22 @@ test("SSO assinado cria sessão; saída pelo navegador revoga e audita", async (
   const previousCookie = cookies
     .map((item) => `${item.name}=${item.value}`)
     .join("; ");
+  const secondTab = await context.newPage();
+  await secondTab.goto("/");
+  await expect(
+    secondTab.getByRole("button", { name: "Sair", exact: true }),
+  ).toBeEnabled();
+  const signoutResponse = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === "/api/auth/sign-out",
+  );
   await page.getByRole("button", { name: "Sair", exact: true }).click();
+  const signedOut = await signoutResponse;
+  expect(signedOut.status()).toBe(200);
+  expect((await signedOut.allHeaders())["clear-site-data"]).toBe(
+    '"cache", "storage"',
+  );
+  await expect(secondTab).toHaveURL(/\/login$/);
+  await secondTab.close();
   await expect(page).toHaveURL(/\/login$/);
   expect(
     (

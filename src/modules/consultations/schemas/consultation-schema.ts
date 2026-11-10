@@ -35,11 +35,37 @@ export function isValidDocument(kind: DocumentKind, input: string): boolean {
   return true;
 }
 
+export function containsPersonalDocument(text: string) {
+  const cpfCandidates =
+    text.match(/(?<!\d)\d{3}\.?\d{3}\.?\d{3}-?\d{2}(?!\d)/g) ?? [];
+  const cnpjCandidates =
+    text
+      .toUpperCase()
+      .match(
+        /(?<![A-Z\d])[A-Z\d]{2}\.?[A-Z\d]{3}\.?[A-Z\d]{3}\/?[A-Z\d]{4}-?\d{2}(?![A-Z\d])/g,
+      ) ?? [];
+  return (
+    cpfCandidates.some((value) => isValidDocument("cpf", value)) ||
+    cnpjCandidates.some((value) => isValidDocument("cnpj", value))
+  );
+}
+
 export const consultationSchema = z
   .object({
     kind: z.enum(["cpf", "cnpj"]),
     document: z.string().max(24).transform(normalizeDocument),
-    purpose: z.string().trim().min(10).max(500),
+    purpose: z
+      .string({ error: "Descreva a finalidade administrativa." })
+      .trim()
+      .min(
+        10,
+        "Descreva a finalidade administrativa com pelo menos 10 caracteres.",
+      )
+      .max(500, "Limite a finalidade administrativa a 500 caracteres.")
+      .refine((value) => !containsPersonalDocument(value), {
+        message:
+          "Não inclua CPF ou CNPJ na finalidade. Informe apenas processo, atividade ou procedimento.",
+      }),
     batchId: z.uuid(),
     forceRefresh: z.boolean().default(false),
     batch: z.boolean().default(false),

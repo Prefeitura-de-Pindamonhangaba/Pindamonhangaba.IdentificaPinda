@@ -11,6 +11,7 @@ import {
   account,
   user,
   rateLimit,
+  session,
 } from "../src/modules/auth/models/auth-schema";
 import { auditEvent } from "../src/modules/audit/models/audit-schema";
 import {
@@ -216,6 +217,28 @@ test("cache criptografado é reutilizado sem chamar o adapter de teste", async (
   });
   expect(exportResponse.status()).toBe(200);
   expect(await exportResponse.text()).toContain("BASE LOCAL FICTÍCIA");
+  const exported = await db
+    .select()
+    .from(auditEvent)
+    .where(eq(auditEvent.correlationId, result.id));
+  expect(
+    exported.some(
+      (event) =>
+        event.action === "consultations.exported" &&
+        event.actorId === users.operator.id,
+    ),
+  ).toBe(true);
+  await login(request, "admin");
+  const auditResponse = await request.get("/api/consultations/audit");
+  expect(auditResponse.status()).toBe(200);
+  expect(await auditResponse.text()).not.toContain("documentDigest");
+  const accessed = await db
+    .select()
+    .from(auditEvent)
+    .where(eq(auditEvent.action, "consultations.audit_viewed"));
+  expect(accessed.some((event) => event.actorId === users.admin.id)).toBe(true);
+  await login(request);
+
   expect(
     (
       await request.post("/api/consultations/disclose", {
@@ -613,4 +636,51 @@ test("operador não acessa auditoria e usa consultas sem detalhes de cache", asy
   await expect(
     page.getByRole("heading", { name: "Auditoria de consultas" }),
   ).toHaveCount(0);
+});
+
+test("limpar dados remove documentos, finalidade, filtro e resultados da tela", async ({
+  page,
+}) => {
+  await login(page.request);
+  await page.goto("/consultations");
+  await page.getByLabel("CPF", { exact: true }).fill(cachedDocument);
+  await page
+    .getByLabel("Finalidade administrativa", { exact: true })
+    .fill("Processo fictício de proteção de dados");
+  await page.getByRole("button", { name: "Consultar", exact: true }).click();
+  await expect(page.getByRole("article")).toHaveCount(1);
+  await page
+    .getByLabel("Filtrar resultados desta tela", { exact: true })
+    .fill("111");
+  await page
+    .getByRole("button", { name: "Limpar dados da tela", exact: true })
+    .click();
+  await expect(page.getByLabel("CPF", { exact: true })).toHaveValue("");
+  await expect(
+    page.getByLabel("Finalidade administrativa", { exact: true }),
+  ).toHaveValue("");
+  await expect(page.getByRole("article")).toHaveCount(0);
+  await expect(
+    page.getByText("Dados da tela limpos.", { exact: true }),
+  ).toBeVisible();
+});
+
+test("expiração durante a consulta apaga resultados antes de pedir novo login", async ({
+  page,
+}) => {
+  await login(page.request);
+  await page.goto("/consultations");
+  await page.getByLabel("CPF", { exact: true }).fill(cachedDocument);
+  await page
+    .getByLabel("Finalidade administrativa", { exact: true })
+    .fill("Processo fictício para sessão expirada");
+  await page.getByRole("button", { name: "Consultar", exact: true }).click();
+  await expect(page.getByRole("article")).toHaveCount(1);
+  await db
+    .update(session)
+    .set({ expiresAt: new Date(0) })
+    .where(eq(session.userId, users.operator.id));
+  await page.getByRole("button", { name: "Exportar CSV", exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole("article")).toHaveCount(0);
 });

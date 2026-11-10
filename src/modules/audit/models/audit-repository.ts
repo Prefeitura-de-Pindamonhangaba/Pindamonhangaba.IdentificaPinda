@@ -9,12 +9,25 @@ export function createAuditRepository(database: PostgresJsDatabase) {
         | "session.created"
         | "session.revoked"
         | "user.credentials_updated"
-        | "consultations.exported"
-        | "consultations.printed",
+        | "consultations.audit_viewed",
     ) {
       await database
         .insert(auditEvent)
         .values({ userId, actorId: userId, action });
+    },
+    async recordDisclosure(
+      userId: string,
+      action: "consultations.exported" | "consultations.printed",
+      consultationIds: string[],
+    ) {
+      await database.insert(auditEvent).values(
+        [...new Set(consultationIds)].map((correlationId) => ({
+          userId,
+          actorId: userId,
+          action,
+          correlationId,
+        })),
+      );
     },
   };
 }
