@@ -11,6 +11,7 @@ import { discloseConsultationResults } from "@/shared/lib/consultations/server";
 import { disclosureSchema } from "../schemas/disclosure-schema";
 import { exportResultsCsv } from "../services/result-format";
 import { ConsultationError } from "../models/consultation-types";
+import { privacyNoticeFailure } from "@/modules/privacy/controllers/privacy-controller";
 
 export async function postDisclosure(request: Request) {
   try {
@@ -40,6 +41,8 @@ export async function postDisclosure(request: Request) {
       },
     );
   } catch (error) {
+    const privacyFailure = privacyNoticeFailure(error);
+    if (privacyFailure) return privacyFailure;
     if (error instanceof ConsultationError)
       return privateJson(
         {

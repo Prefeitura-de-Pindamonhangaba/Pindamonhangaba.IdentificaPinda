@@ -27,3 +27,7 @@ KEYCLOAK_TEST_DATABASE_URL=postgresql://usuario:senha-ficticia@127.0.0.1:55441/p
 ```
 
 As fixtures verificam remoção de estado vencido com preservação de sessões/contadores ativos. A CI executa explicitamente os testes de retenção e OIDC com seu PostgreSQL efêmero. Playwright cobre saída em outra aba, projeção da sessão sem tokens, descarte dos resultados após perda de autorização, botão de limpeza e correlação de exportações/leitura da auditoria. Não reaproveite as connection strings de produção.
+
+## Ciência do aviso de privacidade
+
+Os testes unitários validam versão/hash, conteúdo aprovado, autorização e identidade obtida do principal. O Playwright usa Keycloak/SERPRO fictícios e PostgreSQL isolado para conferir: aviso público, caixa desmarcada, bloqueio direto de consultas/exportações sem efeitos na auditoria da consulta, origem inválida, versão antiga, rejeição de usuário forjado, confirmação pela interface, idempotência concorrente e liberação após ciência.

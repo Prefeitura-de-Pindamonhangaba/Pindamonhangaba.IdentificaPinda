@@ -13,6 +13,7 @@ import {
   readConsultationAudit,
 } from "@/shared/lib/consultations/server";
 import { ConsultationError } from "../models/consultation-types";
+import { privacyNoticeFailure } from "@/modules/privacy/controllers/privacy-controller";
 
 export async function postConsultation(request: Request) {
   try {
@@ -37,6 +38,8 @@ export async function postConsultation(request: Request) {
     const result = await runConsultation(principal, input);
     return privateJson(result);
   } catch (error) {
+    const privacyFailure = privacyNoticeFailure(error);
+    if (privacyFailure) return privacyFailure;
     if (error instanceof ConsultationError)
       return privateJson(
         {

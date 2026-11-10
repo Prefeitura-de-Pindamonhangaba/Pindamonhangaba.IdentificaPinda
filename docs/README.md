@@ -19,7 +19,7 @@
 
 - [Privacidade e revisão LGPD](privacidade-lgpd.md): dados tratados, controles técnicos, retenção, limites e decisões institucionais pendentes.
 
-- [Minuta do aviso de privacidade](minuta-aviso-privacidade.md): adaptação da política do portal municipal, pendente de validação institucional, com referência ao canal oficial.
+- [Aviso de privacidade](aviso-privacidade.md): texto aprovado, disponível em `/privacy`, com ciência obrigatória antes das consultas.
 
 ## Publicar e manter
 

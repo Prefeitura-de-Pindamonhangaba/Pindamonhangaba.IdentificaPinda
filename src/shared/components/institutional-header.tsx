@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export function InstitutionalHeader() {
   return (
@@ -50,6 +51,11 @@ export function InstitutionalFooter() {
         <div>
           <strong>Prefeitura de Pindamonhangaba</strong>
           <p>SETIP · Departamento de Sistemas de Informação</p>
+          <p>
+            <Link href="/privacy" className="repository-link" prefetch={false}>
+              Aviso de privacidade
+            </Link>
+          </p>
           <span>
             Uso restrito · Finalidade administrativa · Acesso auditado
           </span>

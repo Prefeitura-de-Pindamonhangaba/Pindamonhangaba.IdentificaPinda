@@ -883,3 +883,12 @@ thead {
     color: var(--color-text-dark);
   }
 }
+.privacy-notice {
+  max-width: 960px;
+}
+.privacy-notice-section {
+  margin-block: 32px;
+}
+.privacy-notice-section p {
+  max-width: 80ch;
+}

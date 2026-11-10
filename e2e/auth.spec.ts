@@ -243,3 +243,30 @@ test("limita os inícios de SSO por IP", async ({ request }) => {
     expect(result.status()).toBe(i < 5 ? 200 : 429);
   }
 });
+
+test("aviso de privacidade pode ser lido sem autenticação, mas ciência exige sessão", async ({
+  page,
+}) => {
+  await page.goto("/privacy");
+  await expect(
+    page.getByRole("heading", {
+      name: "Aviso de Privacidade do Identifica Pinda",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("MINUTA", { exact: false })).toHaveCount(0);
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "entre com sua conta institucional" }),
+  ).toHaveAttribute("href", "/login");
+  const current = await page.request.get("/api/privacy/notice");
+  expect(current.status()).toBe(200);
+  expect(
+    (
+      await page.request.post("/api/privacy/acknowledgements", {
+        headers: { origin },
+        data: { ...(await current.json()), acknowledged: true },
+      })
+    ).status(),
+  ).toBe(401);
+});

@@ -72,6 +72,11 @@ export function ConsultationView({
   }
 
   function handleAccessFailure(response: Response) {
+    if (response.status === 428) {
+      clearSensitiveData();
+      window.location.replace("/privacy");
+      return true;
+    }
     if (response.status !== 401 && response.status !== 403) return false;
     clearSensitiveData();
     window.location.replace("/login");

@@ -1,3 +1,4 @@
+import { privacyAcknowledgement } from "../src/modules/privacy/models/privacy-schema";
 import { signInTestUser, testIssuer } from "./helpers/oidc-login";
 import { keycloakAccountId } from "../src/modules/auth/services/keycloak-config";
 import { test, expect, type APIRequestContext } from "@playwright/test";
@@ -70,8 +71,24 @@ const payload = (document = cachedDocument) => ({
   batchId: crypto.randomUUID(),
 });
 
-async function login(request: APIRequestContext, role = "operator") {
+async function login(
+  request: APIRequestContext,
+  role = "operator",
+  acknowledge = true,
+) {
   await signInTestUser(request, users[role].id, role);
+  if (acknowledge) {
+    const current = await (await request.get("/api/privacy/notice")).json();
+    const response = await request.post("/api/privacy/acknowledgements", {
+      headers: { origin },
+      data: {
+        version: current.version,
+        digest: current.digest,
+        acknowledged: true,
+      },
+    });
+    expect(response.status()).toBe(200);
+  }
 }
 
 test.beforeAll(async () => {
@@ -111,6 +128,9 @@ test.afterAll(async () => {
     .where(like(user.email, `e2e-infoconv-${runId}%`));
   const ids = createdUsers.map((item) => item.id);
   if (ids.length) {
+    await db
+      .delete(privacyAcknowledgement)
+      .where(inArray(privacyAcknowledgement.userId, ids));
     await db.delete(quotaApproval).where(inArray(quotaApproval.actorId, ids));
     await db
       .delete(consultationAudit)
@@ -683,4 +703,137 @@ test("expiração durante a consulta apaga resultados antes de pedir novo login"
   await page.getByRole("button", { name: "Exportar CSV", exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole("article")).toHaveCount(0);
+});
+
+test("ciência é obrigatória no servidor, vinculada à versão e idempotente", async ({
+  page,
+}) => {
+  await db
+    .delete(privacyAcknowledgement)
+    .where(eq(privacyAcknowledgement.userId, users.operator.id));
+  await login(page.request, "operator", false);
+  const current = await (await page.request.get("/api/privacy/notice")).json();
+  const before = await db
+    .select({ id: consultationAudit.id })
+    .from(consultationAudit)
+    .where(eq(consultationAudit.userId, users.operator.id));
+  const blocked = await page.request.post("/api/consultations", {
+    headers: { origin },
+    data: payload(),
+  });
+  expect(blocked.status()).toBe(428);
+  expect((await blocked.json()).code).toBe("privacy_notice_required");
+  const fake = {
+    id: crypto.randomUUID(),
+    batchId: crypto.randomUUID(),
+    kind: "cpf",
+    document: cachedDocument,
+    status: "success",
+    origin: "mock",
+    obtainedAt: new Date().toISOString(),
+    data: {},
+    proof: "00".repeat(32),
+  };
+  expect(
+    (
+      await page.request.post("/api/consultations/disclose", {
+        headers: { origin },
+        data: { format: "csv", results: [fake] },
+      })
+    ).status(),
+  ).toBe(428);
+  expect(
+    (
+      await db
+        .select({ id: consultationAudit.id })
+        .from(consultationAudit)
+        .where(eq(consultationAudit.userId, users.operator.id))
+    ).length,
+  ).toBe(before.length);
+  const data = {
+    version: current.version,
+    digest: current.digest,
+    acknowledged: true,
+  };
+  expect(
+    (
+      await page.request.post("/api/privacy/acknowledgements", {
+        headers: { origin },
+        data: { ...data, acknowledged: false },
+      })
+    ).status(),
+  ).toBe(400);
+  expect(
+    (
+      await page.request.post("/api/privacy/acknowledgements", {
+        headers: { origin },
+        data: { ...data, userId: users.admin.id },
+      })
+    ).status(),
+  ).toBe(400);
+  expect(
+    (
+      await page.request.post("/api/privacy/acknowledgements", {
+        headers: { origin },
+        data: { ...data, digest: "00".repeat(32) },
+      })
+    ).status(),
+  ).toBe(409);
+  expect(
+    (
+      await page.request.post("/api/privacy/acknowledgements", {
+        headers: { origin: "https://externo.example.org" },
+        data,
+      })
+    ).status(),
+  ).toBe(403);
+  await page.goto("/consultations");
+  await expect(page).toHaveURL(/\/privacy$/);
+  const checkbox = page.getByRole("checkbox", {
+    name: "Li o aviso de privacidade e estou ciente das responsabilidades de uso.",
+  });
+  await expect(checkbox).not.toBeChecked();
+  await expect(
+    page.getByRole("button", { name: "Confirmar ciência e continuar" }),
+  ).toBeDisabled();
+  await checkbox.check();
+  await page
+    .getByRole("button", { name: "Confirmar ciência e continuar" })
+    .click();
+  await expect(page).toHaveURL(/\/consultations$/);
+  const repeats = await Promise.all(
+    [1, 2].map(() =>
+      page.request.post("/api/privacy/acknowledgements", {
+        headers: { origin },
+        data,
+      }),
+    ),
+  );
+  expect(repeats.map((r) => r.status())).toEqual([200, 200]);
+  const rows = await db
+    .select()
+    .from(privacyAcknowledgement)
+    .where(eq(privacyAcknowledgement.userId, users.operator.id));
+  expect(rows).toHaveLength(1);
+  expect(rows[0].noticeVersion).toBe(current.version);
+  expect(rows[0].noticeText).toContain(
+    "Aviso de Privacidade do Identifica Pinda",
+  );
+  expect(rows[0].acknowledgedAt.getTime()).toBeLessThanOrEqual(Date.now());
+  const events = await db
+    .select()
+    .from(auditEvent)
+    .where(eq(auditEvent.correlationId, rows[0].id));
+  expect(events).toHaveLength(1);
+  expect(events[0].action).toBe("privacy_notice.acknowledged");
+  expect(events[0].actorId).toBe(users.operator.id);
+  const allowed = await page.request.post("/api/consultations", {
+    headers: { origin },
+    data: payload(),
+  });
+  expect(allowed.status()).toBe(200);
+  await page.goto("/privacy");
+  await expect(
+    page.getByText("Ciência registrada para a versão 1.0.", { exact: true }),
+  ).toBeVisible();
 });

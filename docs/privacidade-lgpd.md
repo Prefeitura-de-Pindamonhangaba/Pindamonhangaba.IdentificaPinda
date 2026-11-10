@@ -10,11 +10,13 @@ Referências: [LGPD, texto atualizado na Câmara dos Deputados](https://www2.cam
 
 O responsável pelo projeto indicou a [página institucional de LGPD da Prefeitura](https://pindamonhangaba.sp.gov.br/lei-geral-de-protecao-de-dados-lei-federal-n-137092018) como referência do encarregado e dos canais oficiais. O rodapé da aplicação aponta para esse endereço, sem copiar dados de contato sujeitos a atualização. A página retornou 403 na leitura automática; não foi possível confirmar seu conteúdo nesta revisão.
 
-Ainda não há aviso específico aprovado para o Identifica Pinda. A [minuta de aviso de privacidade](minuta-aviso-privacidade.md) foi preparada apenas para revisão institucional, com campos de validação explícitos. Ela não foi publicada como política vigente nem vinculada a um aceite obrigatório.
+O [aviso de privacidade](aviso-privacidade.md), adaptado da política do portal municipal, foi aprovado pelo responsável pelo projeto em 10/11/2026. A página pública `/privacy` disponibiliza a versão 1.0 e o canal oficial, inclusive antes do login.
 
-### Base adotada para a minuta
+Antes de consultar ou exportar resultados, o servidor autenticado deve marcar uma caixa inicialmente desmarcada e confirmar a leitura. O backend verifica a ciência antes de acessar a fonte, o cache ou a franquia. Ausência de ciência retorna HTTP 428; confirmação de conteúdo desatualizado retorna 409. Autenticação, autorização e proteção de origem continuam obrigatórias.
 
-A [política do portal municipal](https://www.pindamonhangaba.sp.gov.br/politica-de-privacidade) foi consultada pela versão com `www` e usada como referência institucional. A minuta incorpora as particularidades registradas neste inventário e continua pendente de aprovação. Nenhum aviso ou aceite foi ativado na aplicação.
+A tabela `privacy_acknowledgements` registra UUID do usuário autenticado, versão, hash SHA-256, conteúdo integral do aviso público e data/hora do banco. O evento `privacy_notice.acknowledged` permite correlação com a auditoria. Confirmações repetidas são idempotentes; não são coletados IP nem User-Agent. Mudanças no conteúdo exigem nova ciência. Não há expurgo automático dessas evidências: sua retenção deve integrar a política documental municipal.
+
+O conteúdo canônico está em `src/modules/privacy/models/privacy-notice.ts`. Para atualizar o aviso, revise o texto, incremente versão/data, execute `bun run privacy:export` e versione o documento gerado. **Ciência do servidor não é consentimento do cidadão consultado nem substitui uma hipótese legal de tratamento.**
 
 ## Dados tratados e limites
 
@@ -50,9 +52,9 @@ A limpeza periódica remove registros operacionais vencidos, não contas nem aud
 ## Pendências da Prefeitura
 
 1. Registrar finalidades e hipóteses legais específicas por serviço/fonte e por atividade autorizada, inclusive o instrumento aplicável ao Infoconv. O campo de justificativa e o acesso técnico não substituem essa definição.
-2. Publicar aviso de privacidade com controlador, encarregado/canal oficial, categorias de dados, usos, compartilhamentos, retenção e orientação para exercício de direitos. Nenhum contato ou fundamento foi inventado pelo código.
+2. Manter o aviso publicado atualizado conforme as atividades, compartilhamentos e políticas aprovadas. Nenhum contato ou fundamento foi inventado pelo código.
 3. Formalizar retenção da auditoria, contas desativadas e backups. O prazo de sete dias é a decisão operacional do cache, não um prazo imposto pela LGPD nem autorização para apagar documentos administrativos.
-4. Definir um termo de uso/responsabilidade do servidor e sua aprovação, versionamento e comprovação do aceite. **Aceite do servidor não é consentimento do cidadão consultado nem substitui uma hipótese legal de tratamento.** O mecanismo de aceite ainda depende da decisão de escopo e do texto aprovado.
+4. Formalizar a retenção das evidências de ciência e avaliar termos adicionais de responsabilidade, se necessários. O mecanismo implementado registra a leitura do aviso aprovado.
 5. Revisar periodicamente grupos e papéis no Keycloak, acessos por unidade e necessidade de cada campo do perfil contratado. A aplicação preserva as funcionalidades contratadas; não presumiu que todos os campos têm a mesma necessidade para todos os setores.
 6. Avaliar operadores externos que recebem tráfego/telemetria, incluindo Cloudflare, e os contratos correspondentes. A instalação atual exige adequar Full (strict) por hostname para TLS também no trecho Cloudflare–origem; a regra de redirecionamento do Nginx não criptografa esse trecho. Restringir a publicação privada de 3000 à rede autorizada ou usar somente a rede Docker.
 7. Estabelecer atendimento aos titulares e resposta a incidentes, com responsáveis, evidências protegidas e avaliação de comunicação conforme as regras aplicáveis. Não disponibilizar busca pública por CPF para supostamente atender direitos sem verificar a identidade e a legitimidade da solicitação.
@@ -67,4 +69,4 @@ A rotação de chaves deve ser planejada: trocar a chave de cache invalida a lei
 
 Testes automatizados usam banco local isolado, identidades fictícias e mocks de SERPRO/Keycloak. Cobrem retenção, ausência de IP/User-Agent em novas sessões, minimização da auditoria, correlação de exportações, perda de autorização, integridade/validade de resultados e proteção das telas ao sair/limpar.
 
-Não há nova tabela ou migração nessa revisão. A implantação da versão ativa a limpeza do estado de autenticação já vencido; ela não remove contas, auditorias nem resultados ainda válidos. Faça a revisão e o backup previstos antes de atualizar. Nenhuma alteração dessa revisão foi aplicada à produção automaticamente.
+A migração aditiva `0004_privacy_acknowledgements.sql` cria a tabela e o índice único por usuário/hash. Faça backup, revise e aplique explicitamente a migração antes de subir a nova versão em produção, conforme [operação](operacao.md). Sem essa tabela, consultas não são liberadas. A implantação da versão ativa a limpeza do estado de autenticação já vencido; ela não remove contas, auditorias nem resultados ainda válidos. Faça a revisão e o backup previstos antes de atualizar. Nenhuma alteração dessa revisão foi aplicada à produção automaticamente.

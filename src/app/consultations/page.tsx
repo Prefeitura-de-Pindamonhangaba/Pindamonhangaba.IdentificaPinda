@@ -2,9 +2,11 @@ import { requirePageAccess } from "@/modules/auth/controllers/access-controller"
 import { hasPermission, type Permission } from "@/modules/auth/permissions";
 import { PanelShell } from "@/shared/components/panel-shell";
 import { ConsultationView } from "@/modules/consultations/views/consultation-view";
+import { requireConsultationNotice } from "@/modules/privacy/controllers/privacy-controller";
 
 export default async function ConsultationsPage() {
   const principal = await requirePageAccess("consultations:read");
+  await requireConsultationNotice(principal);
   const permissions = (
     [
       "consultations:cpf",
