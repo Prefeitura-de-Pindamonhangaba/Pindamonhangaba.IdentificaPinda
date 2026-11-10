@@ -1,18 +1,26 @@
 # MINUTA — Aviso de Privacidade do Identifica Pinda
 
-**Versão de trabalho: 0.1 — 10/11/2026. Não aprovada para publicação.**
+**Versão de trabalho: 0.2 — 10/11/2026. Não aprovada para publicação.**
 
 Este documento é uma proposta para avaliação da Prefeitura, do encarregado e da área jurídica. Os campos **[VALIDAR]** precisam ser preenchidos/aprovados antes de publicar. A minuta não está sendo apresentada como aviso vigente no sistema nem como termo aceito pelo usuário.
 
+## Referência institucional adotada
+
+Base institucional: [Política de Privacidade do Portal da Prefeitura](https://www.pindamonhangaba.sp.gov.br/politica-de-privacidade), consultada em 10/11/2026. Sua organização e linguagem foram adaptadas às consultas internas do Identifica Pinda.
+
+**Nota de revisão:** não foram incorporados aceite tácito, consentimento presumido, funcionalidades ausentes no projeto ou promessas incompatíveis com suas integrações. A descrição operacional abaixo se apoia no inventário técnico da aplicação. A política do portal não substitui a aprovação deste aviso específico.
+
 ## 1. Sobre este aviso
 
-O Identifica Pinda é uma plataforma interna da Prefeitura Municipal de Pindamonhangaba para consulta de informações cadastrais por servidores autorizados. Este aviso explica os tratamentos realizados pela plataforma e se dirige às pessoas cujos dados são consultados e aos servidores que a utilizam.
+A Prefeitura Municipal de Pindamonhangaba assume o compromisso de tratar as informações utilizadas pelo Identifica Pinda com respeito à privacidade, observando as finalidades administrativas autorizadas e a necessidade dos dados para cada atividade.
+
+O Identifica Pinda é uma plataforma interna de consulta de informações cadastrais por servidores autorizados. Este aviso apresenta o tratamento realizado pela plataforma e se dirige tanto às pessoas cujos dados são consultados quanto aos servidores que a utilizam.
 
 **Controlador proposto para validação:** Prefeitura Municipal de Pindamonhangaba. A Secretaria de Tecnologia, Inovação e Projetos (SETIP), por meio do Departamento de Sistemas de Informação (DSI), responde pelo suporte técnico da plataforma. **[VALIDAR as unidades responsáveis pelas finalidades de cada consulta e o papel de cada agente de tratamento.]**
 
 ## 2. Por que os dados são tratados
 
-A plataforma oferece suporte a atividades administrativas municipais autorizadas, reunindo informações cadastrais necessárias ao procedimento declarado pelo servidor. As consultas exigem autenticação, permissão e indicação de finalidade administrativa.
+As informações são utilizadas para apoiar atividades administrativas municipais autorizadas, limitadas aos dados pertinentes ao procedimento declarado pelo servidor. As consultas exigem autenticação, permissão e indicação de finalidade administrativa. O acesso técnico não autoriza consultas por interesse pessoal, curiosidade ou finalidade incompatível com a atividade pública.
 
 **[VALIDAR e descrever as finalidades específicas, unidades autorizadas, hipóteses legais e respectivos atos, convênios ou instrumentos aplicáveis a cada atividade/fonte. Não publicar uma autorização genérica para consultar qualquer pessoa.]**
 
@@ -50,7 +58,9 @@ Os controles técnicos incluem autenticação institucional, autorização no se
 
 ## 7. Cookies e dados de navegação
 
-A plataforma utiliza cookies necessários à autenticação e à manutenção da sessão. A infraestrutura de autenticação e proteção de tráfego pode utilizar mecanismos próprios. Novas sessões da versão revisada não persistem IP e User-Agent no registro de sessão; o endereço de acesso ainda pode ser usado para limitação de requisições e tratado pela infraestrutura.
+Cookies são pequenos registros utilizados pelo navegador. No Identifica Pinda, eles sustentam a autenticação e a continuidade da sessão; bloqueá-los pode impedir o login ou o uso de áreas protegidas. O servidor pode encerrar a sessão pelo comando Sair.
+
+A infraestrutura de autenticação e proteção de tráfego pode utilizar mecanismos próprios. Novas sessões da versão revisada não persistem IP e User-Agent no registro de sessão; o endereço de acesso ainda pode ser usado para limitação de requisições e tratado pela infraestrutura. A versão revisada não contém integração de análise de audiência, publicidade, boletins ou pesquisas. A introdução desses serviços exigirá avaliação e atualização deste aviso.
 
 **[VALIDAR inventário de cookies, logs e prestadores na instalação vigente, com finalidade, duração e responsáveis. Não confundir este aviso com um consentimento genérico para cookies ou publicidade.]**
 
@@ -62,7 +72,17 @@ Para informações sobre o tratamento ou para apresentar solicitações relacion
 
 **[VALIDAR os canais atuais, instruções de atendimento, responsabilidades e procedimentos. A leitura automática da página foi bloqueada; nenhum nome, e-mail ou telefone foi transcrito sem confirmação.]**
 
-## 9. Atualizações deste aviso
+## 9. Compromisso dos usuários autorizados
+
+Os servidores devem utilizar a plataforma somente para atividades autorizadas, registrar a referência administrativa pertinente e evitar inserir dados pessoais desnecessários em campos livres. As credenciais são individuais e não devem ser compartilhadas.
+
+Dados consultados, documentos exportados e impressões devem ser protegidos contra divulgação ou acesso indevido. Suspeitas de uso irregular ou incidente devem ser encaminhadas aos responsáveis institucionais pelos canais definidos pela Prefeitura.
+
+**[VALIDAR os procedimentos internos e sua articulação com um termo de responsabilidade específico. Este aviso não implementa um aceite obrigatório nem cria sanções não previstas em norma.]**
+
+## 10. Links externos e atualizações deste aviso
+
+A plataforma pode disponibilizar links para páginas institucionais, fontes oficiais e repositórios externos. Esses ambientes têm regras e tratamentos próprios; o usuário deve consultar suas informações de privacidade. A presença de um link não autoriza envio de dados cadastrais fora da finalidade administrativa.
 
 Este aviso deve ser revisto quando houver mudanças relevantes nas finalidades, fontes, categorias de dados, prestadores ou políticas de retenção. A versão aprovada deverá informar sua data de vigência e manter o histórico de alterações disponível conforme o procedimento definido pela Prefeitura.
 

@@ -12,6 +12,10 @@ O responsável pelo projeto indicou a [página institucional de LGPD da Prefeitu
 
 Ainda não há aviso específico aprovado para o Identifica Pinda. A [minuta de aviso de privacidade](minuta-aviso-privacidade.md) foi preparada apenas para revisão institucional, com campos de validação explícitos. Ela não foi publicada como política vigente nem vinculada a um aceite obrigatório.
 
+### Base adotada para a minuta
+
+A [política do portal municipal](https://www.pindamonhangaba.sp.gov.br/politica-de-privacidade) foi consultada pela versão com `www` e usada como referência institucional. A minuta incorpora as particularidades registradas neste inventário e continua pendente de aprovação. Nenhum aviso ou aceite foi ativado na aplicação.
+
 ## Dados tratados e limites
 
 | Dados                      | Uso e proteção no código                                                                                                                                    | Retenção                                                                                  |
