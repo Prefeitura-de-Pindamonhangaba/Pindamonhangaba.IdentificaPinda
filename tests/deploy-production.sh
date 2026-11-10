@@ -4,7 +4,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fixture="$(mktemp -d -t pinda-deploy-tests.XXXXXXXX)"
 trap 'rm -rf -- "$fixture"' EXIT
 mkdir -p "$fixture/bin" "$fixture/workspace"
-cp "$root/compose.yml" "$root/compose.release.yml" "$fixture/workspace/"
+cp "$root/compose.yml" "$root/compose.proxy-manager.yml" "$root/compose.release.yml" "$fixture/workspace/"
 cat > "$fixture/bin/docker" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -49,6 +49,8 @@ for scenario in success dev_mode init_failure health_failure mutable_tag; do
   if [[ "$scenario" == success ]]; then
     [[ "$status" == 0 && "$(cat "$DEPLOY_DIR/current-release")" == "$RELEASE_ID" ]]
     [[ -f "$DEPLOY_DIR/releases/$RELEASE_ID/images.env" ]]
+    [[ -f "$DEPLOY_DIR/releases/$RELEASE_ID/compose.proxy-manager.yml" ]]
+    grep -q -- "-f $DEPLOY_DIR/releases/$RELEASE_ID/compose.proxy-manager.yml -f $DEPLOY_DIR/releases/$RELEASE_ID/compose.release.yml" "$MOCK_COMMANDS"
   else
     [[ "$status" != 0 && "$(cat "$DEPLOY_DIR/current-release")" == previous-approved-release ]]
   fi

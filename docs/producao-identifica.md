@@ -26,7 +26,7 @@ docker compose --env-file .env --env-file images.env -f compose.yml -f compose.p
 
 O Compose pode receber os arquivos pelo `COMPOSE_FILE` do `.env`. Preserve o nome estável `identifica-pinda-production` em todos os comandos dessa instalação. Faça backup antes de migrações; não remova volumes como parte do deploy.
 
-O workflow padrão do repositório ainda precisa selecionar esse overlay para atualizar esta instalação pelo Actions. Não habilite a esteira de produção com apenas `compose.yml`/`compose.release.yml`: isso perderia a rede do proxy e a CA do banco. A primeira instalação foi preparada diretamente por SSH.
+O workflow de produção usa os três arquivos nessa ordem, preservando a rede do proxy e a CA do banco. A cada push na `main`, executa testes, publica imagens e atualiza a instalação pelo runner da própria VM. Consulte [GitHub Actions](github-actions.md). A primeira instalação foi preparada diretamente por SSH.
 
 ## Backup e validação
 
