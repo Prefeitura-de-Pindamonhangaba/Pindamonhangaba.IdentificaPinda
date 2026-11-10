@@ -110,6 +110,12 @@ test("apresentação tem apenas Login, redireciona ao SSO e funciona em celular"
   await expect(
     page.getByRole("heading", { name: "Identifica Pinda", exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Proteção de dados · Canal oficial ↗" }),
+  ).toHaveAttribute(
+    "href",
+    "https://pindamonhangaba.sp.gov.br/lei-geral-de-protecao-de-dados-lei-federal-n-137092018",
+  );
   await expect(page.locator("main button")).toHaveCount(1);
   await expect(page.locator("main input")).toHaveCount(0);
   await expect(

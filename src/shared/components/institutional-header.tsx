@@ -53,6 +53,17 @@ export function InstitutionalFooter() {
           <span>
             Uso restrito · Finalidade administrativa · Acesso auditado
           </span>
+          <p>
+            <a
+              className="repository-link"
+              href="https://pindamonhangaba.sp.gov.br/lei-geral-de-protecao-de-dados-lei-federal-n-137092018"
+              target="_blank"
+              rel="noopener noreferrer"
+              referrerPolicy="no-referrer"
+            >
+              Proteção de dados · Canal oficial ↗
+            </a>
+          </p>
         </div>
       </div>
     </footer>

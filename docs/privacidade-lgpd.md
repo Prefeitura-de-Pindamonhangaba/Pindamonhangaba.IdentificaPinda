@@ -6,6 +6,12 @@ Esta revisão reforça controles técnicos do Identifica Pinda. **Não é uma ce
 
 Referências: [LGPD, texto atualizado na Câmara dos Deputados](https://www2.camara.leg.br/legin/fed/lei/2018/lei-13709-14-agosto-2018-787077-normaatualizada-pl.html), especialmente arts. 6º, 7º, 15–16, 23, 37 e 46; [guia da ANPD para o Poder Público](https://www.gov.br/anpd/pt-br/centrais-de-conteudo/materiais-educativos-e-publicacoes/guia_orientativo_tratamento_de_dados_pessoais_pelo_poder_publico).
 
+## Canal institucional e aviso de privacidade
+
+O responsável pelo projeto indicou a [página institucional de LGPD da Prefeitura](https://pindamonhangaba.sp.gov.br/lei-geral-de-protecao-de-dados-lei-federal-n-137092018) como referência do encarregado e dos canais oficiais. O rodapé da aplicação aponta para esse endereço, sem copiar dados de contato sujeitos a atualização. A página retornou 403 na leitura automática; não foi possível confirmar seu conteúdo nesta revisão.
+
+Ainda não há aviso específico aprovado para o Identifica Pinda. A [minuta de aviso de privacidade](minuta-aviso-privacidade.md) foi preparada apenas para revisão institucional, com campos de validação explícitos. Ela não foi publicada como política vigente nem vinculada a um aceite obrigatório.
+
 ## Dados tratados e limites
 
 | Dados                      | Uso e proteção no código                                                                                                                                    | Retenção                                                                                  |

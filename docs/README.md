@@ -19,6 +19,8 @@
 
 - [Privacidade e revisão LGPD](privacidade-lgpd.md): dados tratados, controles técnicos, retenção, limites e decisões institucionais pendentes.
 
+- [Minuta do aviso de privacidade](minuta-aviso-privacidade.md): proposta pendente de validação institucional, com referência ao canal oficial.
+
 ## Publicar e manter
 
 - [Rede local com HTTPS](instalacao-rede-local.md): overlay Docker, proxy, certificados e login institucional nesta instalacao.
