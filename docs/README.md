@@ -24,6 +24,7 @@
 - [Rede local com HTTPS](instalacao-rede-local.md): overlay Docker, proxy, certificados e login institucional nesta instalacao.
 
 - [AlmaLinux e Nginx](almalinux-nginx.md): VM da Prefeitura, SELinux, proxy e testes antes do DNS.
+- [Produção do Identifica Pinda](producao-identifica.md): Nginx Proxy Manager na VM e PostgreSQL separado.
 - [GitHub Actions e produção](github-actions.md): CI, GHCR, runner próprio e preparação do servidor.
 - [Mudança de identidade](renomeacao.md): atualizar instalações existentes, repositório e domínio.
 - [Configuração e operação](operacao.md): containers, migrações, atualização e recuperação.
