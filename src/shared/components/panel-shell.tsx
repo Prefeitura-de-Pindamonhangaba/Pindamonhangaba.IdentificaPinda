@@ -5,6 +5,7 @@ import {
   InstitutionalFooter,
 } from "./institutional-header";
 import { PanelNavigation } from "./panel-navigation";
+import { SessionPrivacyGuard } from "./session-privacy-guard";
 
 export function PanelShell({
   userName,
@@ -19,6 +20,7 @@ export function PanelShell({
 }) {
   return (
     <>
+      <SessionPrivacyGuard />
       <InstitutionalHeader />
       <div className="panel-bar container">
         <Link className="product-brand" href="/">

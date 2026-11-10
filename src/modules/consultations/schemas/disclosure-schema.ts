@@ -19,5 +19,8 @@ export const disclosureSchema = z.object({
       }),
     )
     .min(1)
-    .max(500),
+    .max(500)
+    .refine((rows) => new Set(rows.map((row) => row.id)).size === rows.length, {
+      message: "Não repita resultados na exportação.",
+    }),
 });

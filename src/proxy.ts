@@ -4,6 +4,11 @@ import { canAccess } from "@/modules/auth/services/access-service";
 
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
+  if (path === "/privacy" || path === "/api/privacy/notice") {
+    const response = NextResponse.next();
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
+  }
   if (
     path === "/login" ||
     path === "/icon.svg" ||

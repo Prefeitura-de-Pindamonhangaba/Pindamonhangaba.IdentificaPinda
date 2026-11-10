@@ -16,6 +16,7 @@ import { signResult } from "@/modules/consultations/services/result-proof";
 import { authorizeDisclosure } from "@/modules/consultations/services/disclosure-service";
 import { createAuditRepository } from "@/modules/audit/models/audit-repository";
 import { createQuotaRepository } from "@/modules/consultations/models/quota-repository";
+import { requirePrivacyAcknowledgement } from "@/shared/lib/privacy/server";
 import {
   approveQuota,
   readQuota,
@@ -36,6 +37,7 @@ export async function runConsultation(
   principal: Principal,
   input: ConsultationInput,
 ) {
+  await requirePrivacyAcknowledgement(principal);
   const env = parseInfoconvEnvironment(process.env);
   const adapter = await createInfoconvAdapter(env);
   const key = documentDigest(
@@ -50,10 +52,15 @@ export async function runConsultation(
 }
 
 export async function readConsultationAudit(principal: Principal) {
-  return listConsultationAudit(
+  const result = await listConsultationAudit(
     createConsultationRepository(getDatabase()),
     principal,
   );
+  await createAuditRepository(getDatabase()).record(
+    principal.id,
+    "consultations.audit_viewed",
+  );
+  return result;
 }
 
 export async function discloseConsultationResults(
@@ -61,6 +68,7 @@ export async function discloseConsultationResults(
   results: ConsultationResult[],
   format: "csv" | "print",
 ) {
+  await requirePrivacyAcknowledgement(principal);
   const key = parseInfoconvEnvironment(process.env).INFOCONV_AUDIT_KEY;
   await authorizeDisclosure(
     createConsultationRepository(getDatabase()),
@@ -68,8 +76,9 @@ export async function discloseConsultationResults(
     principal,
     results,
   );
-  await createAuditRepository(getDatabase()).record(
+  await createAuditRepository(getDatabase()).recordDisclosure(
     principal.id,
     format === "csv" ? "consultations.exported" : "consultations.printed",
+    results.map((result) => result.id),
   );
 }

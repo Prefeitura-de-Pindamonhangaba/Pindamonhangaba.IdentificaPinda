@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, lte, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { consultationAudit, consultationCache } from "./consultation-schema";
 import { currentQuotaMonth } from "../services/quota-policy";
@@ -27,7 +27,7 @@ export function createConsultationRepository(database: Executor) {
     async purgeExpired() {
       await database
         .delete(consultationCache)
-        .where(lt(consultationCache.expiresAt, new Date()));
+        .where(lte(consultationCache.expiresAt, new Date()));
     },
     async findCache(
       key: string,
@@ -138,7 +138,18 @@ export function createConsultationRepository(database: Executor) {
     },
     async listAudit(userId?: string) {
       return database
-        .select()
+        .select({
+          id: consultationAudit.id,
+          userId: consultationAudit.userId,
+          batchId: consultationAudit.batchId,
+          kind: consultationAudit.kind,
+          source: consultationAudit.source,
+          documentMasked: consultationAudit.documentMasked,
+          purpose: consultationAudit.purpose,
+          status: consultationAudit.status,
+          origin: consultationAudit.origin,
+          createdAt: consultationAudit.createdAt,
+        })
         .from(consultationAudit)
         .where(userId ? eq(consultationAudit.userId, userId) : undefined)
         .orderBy(desc(consultationAudit.createdAt))

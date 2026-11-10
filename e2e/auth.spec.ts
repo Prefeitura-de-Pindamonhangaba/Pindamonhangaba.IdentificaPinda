@@ -110,6 +110,12 @@ test("apresentação tem apenas Login, redireciona ao SSO e funciona em celular"
   await expect(
     page.getByRole("heading", { name: "Identifica Pinda", exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Proteção de dados · Canal oficial ↗" }),
+  ).toHaveAttribute(
+    "href",
+    "https://pindamonhangaba.sp.gov.br/lei-geral-de-protecao-de-dados-lei-federal-n-137092018",
+  );
   await expect(page.locator("main button")).toHaveCount(1);
   await expect(page.locator("main input")).toHaveCount(0);
   await expect(
@@ -157,6 +163,11 @@ test("SSO assinado cria sessão; saída pelo navegador revoga e audita", async (
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Minha conta" })).toHaveCount(0);
   await expect(page.locator('input[type="password"]')).toHaveCount(0);
+  const publicSession = await page.request.get("/api/auth/get-session");
+  expect(publicSession.status()).toBe(200);
+  const sessionBody = await publicSession.json();
+  expect(Object.keys(sessionBody.session).sort()).toEqual(["expiresAt", "id"]);
+  expect(Object.keys(sessionBody.user).sort()).toEqual(["id", "name"]);
   const cookies = await context.cookies();
   const cookie = cookies.find((item) => item.name.endsWith("session_token"));
   expect(cookie?.httpOnly).toBe(true);
@@ -164,7 +175,22 @@ test("SSO assinado cria sessão; saída pelo navegador revoga e audita", async (
   const previousCookie = cookies
     .map((item) => `${item.name}=${item.value}`)
     .join("; ");
+  const secondTab = await context.newPage();
+  await secondTab.goto("/");
+  await expect(
+    secondTab.getByRole("button", { name: "Sair", exact: true }),
+  ).toBeEnabled();
+  const signoutResponse = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === "/api/auth/sign-out",
+  );
   await page.getByRole("button", { name: "Sair", exact: true }).click();
+  const signedOut = await signoutResponse;
+  expect(signedOut.status()).toBe(200);
+  expect((await signedOut.allHeaders())["clear-site-data"]).toBe(
+    '"cache", "storage"',
+  );
+  await expect(secondTab).toHaveURL(/\/login$/);
+  await secondTab.close();
   await expect(page).toHaveURL(/\/login$/);
   expect(
     (
@@ -216,4 +242,31 @@ test("limita os inícios de SSO por IP", async ({ request }) => {
     });
     expect(result.status()).toBe(i < 5 ? 200 : 429);
   }
+});
+
+test("aviso de privacidade pode ser lido sem autenticação, mas ciência exige sessão", async ({
+  page,
+}) => {
+  await page.goto("/privacy");
+  await expect(
+    page.getByRole("heading", {
+      name: "Aviso de Privacidade do Identifica Pinda",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("MINUTA", { exact: false })).toHaveCount(0);
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "entre com sua conta institucional" }),
+  ).toHaveAttribute("href", "/login");
+  const current = await page.request.get("/api/privacy/notice");
+  expect(current.status()).toBe(200);
+  expect(
+    (
+      await page.request.post("/api/privacy/acknowledgements", {
+        headers: { origin },
+        data: { ...(await current.json()), acknowledged: true },
+      })
+    ).status(),
+  ).toBe(401);
 });

@@ -13,6 +13,7 @@ import {
   readConsultationAudit,
 } from "@/shared/lib/consultations/server";
 import { ConsultationError } from "../models/consultation-types";
+import { privacyNoticeFailure } from "@/modules/privacy/controllers/privacy-controller";
 
 export async function postConsultation(request: Request) {
   try {
@@ -21,7 +22,9 @@ export async function postConsultation(request: Request) {
     if (!parsed.success)
       throw new RequestError(
         400,
-        "Informe documento válido e finalidade com pelo menos 10 caracteres.",
+        parsed.error.issues.find((issue) => issue.path[0] === "purpose")
+          ?.message ??
+          "Informe documento válido e finalidade com pelo menos 10 caracteres.",
       );
     const input = parsed.data;
     if (input.batch && !canAccess(principal, "consultations:batch"))
@@ -35,6 +38,8 @@ export async function postConsultation(request: Request) {
     const result = await runConsultation(principal, input);
     return privateJson(result);
   } catch (error) {
+    const privacyFailure = privacyNoticeFailure(error);
+    if (privacyFailure) return privacyFailure;
     if (error instanceof ConsultationError)
       return privateJson(
         {

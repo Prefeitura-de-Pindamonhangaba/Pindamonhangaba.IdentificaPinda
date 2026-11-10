@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export function InstitutionalHeader() {
   return (
@@ -50,9 +51,25 @@ export function InstitutionalFooter() {
         <div>
           <strong>Prefeitura de Pindamonhangaba</strong>
           <p>SETIP · Departamento de Sistemas de Informação</p>
+          <p>
+            <Link href="/privacy" className="repository-link" prefetch={false}>
+              Aviso de privacidade
+            </Link>
+          </p>
           <span>
             Uso restrito · Finalidade administrativa · Acesso auditado
           </span>
+          <p>
+            <a
+              className="repository-link"
+              href="https://pindamonhangaba.sp.gov.br/lei-geral-de-protecao-de-dados-lei-federal-n-137092018"
+              target="_blank"
+              rel="noopener noreferrer"
+              referrerPolicy="no-referrer"
+            >
+              Proteção de dados · Canal oficial ↗
+            </a>
+          </p>
         </div>
       </div>
     </footer>

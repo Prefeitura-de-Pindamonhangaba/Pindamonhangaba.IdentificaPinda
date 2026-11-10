@@ -29,7 +29,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:generate": "bunx --bun drizzle-kit generate",
-    "db:migrate": "bunx --bun drizzle-kit migrate"
+    "db:migrate": "bunx --bun drizzle-kit migrate",
+    "privacy:export": "bun scripts/export-privacy-notice.ts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.12",

@@ -15,6 +15,12 @@
 - [Testes](testes.md): verificações locais, banco isolado e Playwright.
 - [Identidade visual](identidade-visual.md): paleta, componentes, acessibilidade e reutilização entre sistemas.
 
+## Proteção de dados
+
+- [Privacidade e revisão LGPD](privacidade-lgpd.md): dados tratados, controles técnicos, retenção, limites e decisões institucionais pendentes.
+
+- [Aviso de privacidade](aviso-privacidade.md): texto aprovado, disponível em `/privacy`, com ciência obrigatória antes das consultas.
+
 ## Publicar e manter
 
 - [Rede local com HTTPS](instalacao-rede-local.md): overlay Docker, proxy, certificados e login institucional nesta instalacao.

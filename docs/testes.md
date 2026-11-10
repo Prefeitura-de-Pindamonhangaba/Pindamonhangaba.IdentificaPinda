@@ -17,3 +17,17 @@ Na CI, Playwright usa Chromium instalado pelo workflow e PostgreSQL efêmero com
 Os testes de certificados Infoconv geram identidades fictícias temporárias com `openssl` (disponível no PATH do ambiente de testes) e verificam mTLS em loopback. O binário é necessário somente para gerar as fixtures de teste; o carregamento de PFX/PEM na aplicação usa o TLS nativo do Bun, sem OpenSSL externo em produção e sem consultas ao SERPRO.
 
 Os testes de navegador iniciam um provedor OIDC fictício em `127.0.0.1:3102`, separado do app de teste (`localhost:3101`). Ele emite tokens RSA assinados com chave efêmera e verifica PKCE; o teste cobre provisionamento automático, papéis do cliente e revogação; fixtures legadas do banco isolado também verificam compatibilidade de UUIDs. Nenhum endpoint de teste é incluído na aplicação. A suíte cobre o botão Login, ausência de formulário local, bloqueio de endpoints de senha, SSO, sessão, logout e revogação. O Keycloak real não é acessado.
+
+## Privacidade e retenção
+
+`tests/privacy.test.ts` verifica minimização da sessão pública, validação da finalidade e autorização/validade de exportações. `tests/auth-retention.test.ts` usa o mesmo `KEYCLOAK_TEST_DATABASE_URL` do fluxo OIDC, exigindo banco local exclusivo com sufixo `_test`; sem a variável, esses testes de banco são ignorados. Para executar ambos em um PostgreSQL de testes já preparado:
+
+```sh
+KEYCLOAK_TEST_DATABASE_URL=postgresql://usuario:senha-ficticia@127.0.0.1:55441/privacidade_test bun test
+```
+
+As fixtures verificam remoção de estado vencido com preservação de sessões/contadores ativos. A CI executa explicitamente os testes de retenção e OIDC com seu PostgreSQL efêmero. Playwright cobre saída em outra aba, projeção da sessão sem tokens, descarte dos resultados após perda de autorização, botão de limpeza e correlação de exportações/leitura da auditoria. Não reaproveite as connection strings de produção.
+
+## Ciência do aviso de privacidade
+
+Os testes unitários validam versão/hash, conteúdo aprovado, autorização e identidade obtida do principal. O Playwright usa Keycloak/SERPRO fictícios e PostgreSQL isolado para conferir: aviso público, caixa desmarcada, bloqueio direto de consultas/exportações sem efeitos na auditoria da consulta, origem inválida, versão antiga, rejeição de usuário forjado, confirmação pela interface, idempotência concorrente e liberação após ciência.

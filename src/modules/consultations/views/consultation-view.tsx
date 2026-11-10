@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Permission } from "@/modules/auth/permissions";
 import { parseDocumentList } from "../schemas/consultation-schema";
 import type {
@@ -42,6 +42,46 @@ export function ConsultationView({
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState("");
   const controller = useRef<AbortController | null>(null);
+  const disclosureController = useRef<AbortController | null>(null);
+  const fileInput = useRef<HTMLInputElement | null>(null);
+  const fileRevision = useRef(0);
+
+  useEffect(
+    () => () => {
+      controller.current?.abort();
+      disclosureController.current?.abort();
+      fileRevision.current++;
+    },
+    [],
+  );
+
+  function clearSensitiveData() {
+    controller.current?.abort();
+    controller.current = null;
+    disclosureController.current?.abort();
+    disclosureController.current = null;
+    fileRevision.current++;
+    if (fileInput.current) fileInput.current.value = "";
+    setDocuments("");
+    setPurpose("");
+    setResults([]);
+    setFilter("");
+    setProgress({ done: 0, total: 0 });
+    setPending(false);
+    setMessage("Dados da tela limpos.");
+  }
+
+  function handleAccessFailure(response: Response) {
+    if (response.status === 428) {
+      clearSensitiveData();
+      window.location.replace("/privacy");
+      return true;
+    }
+    if (response.status !== 401 && response.status !== 403) return false;
+    clearSensitiveData();
+    window.location.replace("/login");
+    return true;
+  }
 
   async function readFile(file?: File) {
     if (!file) return;
@@ -51,7 +91,10 @@ export function ConsultationView({
       );
       return;
     }
-    setDocuments(await file.text());
+    const revision = ++fileRevision.current;
+    const text = await file.text();
+    if (revision !== fileRevision.current) return;
+    setDocuments(text);
     setMessage("");
   }
 
@@ -96,6 +139,7 @@ export function ConsultationView({
           }),
           signal: abort.signal,
         });
+        if (handleAccessFailure(response)) return;
         if (!response.ok) {
           const body: { message?: string; code?: string } =
             await response.json();
@@ -116,6 +160,7 @@ export function ConsultationView({
           break;
         }
         const result: ConsultationResult = await response.json();
+        if (abort.signal.aborted) return;
         setResults((current) => [...current, result]);
         setProgress({ done: index + 1, total: list.length });
         consecutiveFailures =
@@ -128,6 +173,7 @@ export function ConsultationView({
         }
       }
     } catch {
+      if (controller.current !== abort) return;
       if (!abort.signal.aborted)
         setMessage(
           "Não foi possível comunicar com o servidor. Resultados já obtidos foram preservados nesta tela.",
@@ -137,19 +183,26 @@ export function ConsultationView({
           "Lote interrompido. Resultados já obtidos estão disponíveis abaixo.",
         );
     } finally {
-      setPending(false);
-      controller.current = null;
+      if (controller.current === abort) {
+        setPending(false);
+        controller.current = null;
+      }
     }
   }
 
   async function disclose(format: "csv" | "print") {
     setMessage("");
+    disclosureController.current?.abort();
+    const abort = new AbortController();
+    disclosureController.current = abort;
     try {
       const response = await fetch("/api/consultations/disclose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ results, format }),
+        signal: abort.signal,
       });
+      if (abort.signal.aborted || handleAccessFailure(response)) return;
       if (!response.ok) {
         const body: { message?: string } = await response.json();
         setMessage(body.message ?? "Exportação não autorizada.");
@@ -159,14 +212,20 @@ export function ConsultationView({
         window.print();
         return;
       }
-      const url = URL.createObjectURL(await response.blob());
+      const blob = await response.blob();
+      if (abort.signal.aborted) return;
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `infoconv-${kind}-${new Date().toISOString().slice(0, 10)}.csv`;
       link.click();
       URL.revokeObjectURL(url);
     } catch {
-      setMessage("Não foi possível exportar os resultados.");
+      if (!abort.signal.aborted)
+        setMessage("Não foi possível exportar os resultados.");
+    } finally {
+      if (disclosureController.current === abort)
+        disclosureController.current = null;
     }
   }
   const filtered = results.filter((result) =>
@@ -189,7 +248,7 @@ export function ConsultationView({
           <span className="status">Cache criptografado · 7 dias</span>
         )}
       </div>
-      <form className="consultation-form" onSubmit={submit}>
+      <form className="consultation-form" onSubmit={submit} autoComplete="off">
         <fieldset disabled={pending}>
           <legend>Identificação da consulta</legend>
           <div className="form-grid">
@@ -246,6 +305,7 @@ export function ConsultationView({
               <label htmlFor="file">Importar arquivo TXT</label>
               <input
                 key="batch-file"
+                ref={fileInput}
                 id="file"
                 type="file"
                 accept=".txt,text/plain"
@@ -275,8 +335,13 @@ export function ConsultationView({
             maxLength={500}
             rows={2}
             placeholder="Informe o processo, atividade ou procedimento que justifica esta consulta."
+            aria-describedby="purpose-privacy"
             required
           />
+          <small id="purpose-privacy">
+            Informe apenas a referência administrativa. Não inclua nomes,
+            documentos ou outros dados pessoais na finalidade.
+          </small>
           {permissions.includes("consultations:refresh") && (
             <label className="checkbox-label">
               <input
@@ -292,6 +357,13 @@ export function ConsultationView({
         <div className="form-actions">
           <button className="button" disabled={pending} type="submit">
             {pending ? "Consultando…" : "Consultar"}
+          </button>
+          <button
+            className="button button-secondary"
+            type="button"
+            onClick={clearSensitiveData}
+          >
+            Limpar dados da tela
           </button>
           {pending && (
             <button
