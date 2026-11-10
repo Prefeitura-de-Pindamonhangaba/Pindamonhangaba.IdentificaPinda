@@ -49,7 +49,7 @@ Para produção, altere somente o seletor para `COMPOSE_PROFILES=production` e f
 
 Os valores de banco em `.env.example` são exclusivos de desenvolvimento. HTTPS, segredos próprios e procedimentos de backup são necessários em produção. A franquia padrão de **10.000 chamadas/mês** corresponde à instalação original; outros órgãos devem configurá-la conforme seu contrato e consumo compartilhado.
 
-Veja [GitHub Actions e produção](docs/github-actions.md) para CI, publicação de imagens e deploy manual em runner próprio. A ativação no servidor permanece desabilitada até configurarmos o ambiente.
+Veja [GitHub Actions e produção](docs/github-actions.md) para testes de PR e deploy da `main` em runner próprio. O fluxo executa testes, publica imagens e atualiza a produção.
 
 Consulte também a [revisão técnica de privacidade e LGPD](docs/privacidade-lgpd.md), com os controles implementados e as decisões institucionais necessárias.
 

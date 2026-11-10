@@ -4,7 +4,7 @@ Instalação definida para AlmaLinux, arquitetura amd64, runner na própria VM d
 
 ## Pastas e variáveis
 
-A pasta proposta para a aplicação é `/opt/identifica-pinda`; mantenha o runner em outra pasta e use um usuário próprio para seu serviço. Não coloque a configuração privada no workspace de checkout.
+A pasta da aplicação é `/opt/Pindamonhangaba.IdentificaPinda`; mantenha o runner em outra pasta e use um usuário próprio para seu serviço. Não coloque a configuração privada no workspace de checkout.
 
 No `.env` privado do servidor, criado com base no modelo:
 
@@ -19,7 +19,7 @@ INFOCONV_ENABLED=false
 
 Os dois valores em maiúsculas são marcadores: substitua-os pelos segredos reais somente no servidor. Preserve as demais variáveis necessárias da integração. Mantenha leitura do `.env` restrita ao usuário responsável e ao runner. O banco, os segredos e os certificados de produção devem ser exclusivos desse ambiente.
 
-No GitHub, configure `PRODUCTION_PLATFORM=linux/amd64`, `PRODUCTION_DEPLOY_DIR=/opt/identifica-pinda`, `PRODUCTION_COMPOSE_PROJECT=identifica-pinda` e `PRODUCTION_URL=https://identifica.pindamonhangaba.sp.gov.br`. Mantenha `PRODUCTION_DEPLOY_ENABLED=false` durante a preparação. O cadastro do grupo e do runner segue [GitHub Actions](github-actions.md) e exige administrador da organização.
+O workflow já usa Linux amd64, pasta `/opt/Pindamonhangaba.IdentificaPinda`, projeto `identifica-pinda-production` e URL `https://identifica.pindamonhangaba.sp.gov.br`. Confira as variáveis opcionais descritas em [GitHub Actions](github-actions.md) antes de mesclar na `main`. O cadastro do grupo e do runner segue [GitHub Actions](github-actions.md) e exige administrador da organização.
 
 ## Conferência da VM
 

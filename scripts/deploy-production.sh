@@ -31,9 +31,9 @@ release_id="${RELEASE_ID:-${RELEASE_SHA}-$(date +%s)-1}"
 release_dir="$deploy_dir/releases/$release_id"
 [[ ! -e "$release_dir" ]] || fail "essa execução já possui uma release; use uma nova tentativa do workflow."
 mkdir -p "$release_dir"
-cp compose.yml compose.release.yml "$release_dir/"
+cp compose.yml compose.proxy-manager.yml compose.release.yml "$release_dir/"
 printf 'APP_IMAGE=%s\nTOOLS_IMAGE=%s\n' "$APP_IMAGE" "$TOOLS_IMAGE" > "$release_dir/images.env"
-compose=(docker compose --project-directory "$deploy_dir" --env-file "$deploy_dir/.env" --env-file "$release_dir/images.env" --project-name "$project" -f "$release_dir/compose.yml" -f "$release_dir/compose.release.yml")
+compose=(docker compose --project-directory "$deploy_dir" --env-file "$deploy_dir/.env" --env-file "$release_dir/images.env" --project-name "$project" -f "$release_dir/compose.yml" -f "$release_dir/compose.proxy-manager.yml" -f "$release_dir/compose.release.yml")
 
 # Nunca imprimir config: o JSON interpolado contém as credenciais do servidor.
 if ! "${compose[@]}" config --format json 2>/dev/null | python3 -c '

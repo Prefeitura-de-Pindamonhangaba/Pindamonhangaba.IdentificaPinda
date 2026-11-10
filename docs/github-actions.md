@@ -1,82 +1,58 @@
 # GitHub Actions e produção
 
-A esteira está preparada para **runner próprio Linux na VM que executa os containers de produção**. Se o runner ficar em outra máquina, configure o acesso ao Docker do destino antes de habilitar o deploy; o script atual utiliza o Docker local do runner.
-
-Para a instalação da Prefeitura em AlmaLinux amd64 com Nginx, consulte o [roteiro específico da VM](almalinux-nginx.md).
-
 ## Fluxo
 
-- `CI`: pull requests e pushes na `main`; formatação, lint, testes Bun, build, tipagem e Playwright/Chromium com PostgreSQL isolado. Não utiliza segredos de produção nem runner interno.
-- `Produção`: execução manual em **Actions → Produção → Run workflow**, selecionando `main`. Repete CI, constrói as imagens de aplicação e ferramentas e publica no GHCR usando o token temporário do GitHub.
-- O deploy permanece **desabilitado por padrão**. Só executa quando a variável de repositório `PRODUCTION_DEPLOY_ENABLED` for `true`, no environment `production` e no runner com os labels `self-hosted`, `Linux` e `identifica-pinda-production`.
-- A ativação usa digests SHA-256 das imagens geradas pelo mesmo workflow. Não usa `latest` nem compila no servidor. Uma execução por vez; deploy em andamento não é cancelado por outro disparo.
+- **Pull request:** executa testes Bun e Playwright com PostgreSQL isolado, formatação, lint, build e tipagem.
+- **Push na `main`:** executa os mesmos testes uma vez, publica as imagens no GHCR e faz o deploy no runner da VM `10.0.0.193`.
+- **Execução manual:** Actions → Produção → Run workflow → `main`, para repetir a mesma sequência.
 
-Publicar imagens não significa publicar o sistema. O resumo do workflow informa quando a etapa de servidor está desabilitada.
+O workflow de produção mostra três etapas: **Testes → Build e publicação → Deploy**. Se uma etapa falhar, as seguintes não executam. Não existe mais uma variável para publicar imagens e pular silenciosamente o deploy.
 
-## Configurar juntos: servidor e runner
+As imagens são Linux amd64 e identificadas por digest. O servidor baixa as imagens; não compila a aplicação. Credenciais e certificados permanecem no `.env` e na pasta `certificates/` do servidor.
 
-Confirme primeiro sistema operacional Linux, arquitetura (`amd64` ou `arm64`), domínio HTTPS e se o runner ficará no próprio host dos containers. Instale Docker, Docker Compose **2.24.4 ou posterior**, Bash, Python 3 e utilitários `flock`/`realpath`. Mantenha o runner atualizado para executar as versões das actions fixadas por SHA.
+## Configuração inicial
 
-Na organização, crie um **runner group** chamado `identifica-pinda-production`, limitado a este repositório e exclusivamente ao workflow `Prefeitura-de-Pindamonhangaba/Pindamonhangaba.IdentificaPinda/.github/workflows/production.yml@refs/heads/main`. Permita o acesso do repositório público somente com essa restrição de workflow. Não libere todos os workflows nem a CI de PRs: código de forks não deve executar na máquina que acessa a rede e os segredos de produção.
+1. Mantenha o runner Linux x64 na própria VM de produção, com Docker, Compose 2.24.4 ou posterior, Bash, Python 3, `flock` e `realpath`.
+2. Use o runner group `identifica-pinda-production` e os labels `self-hosted`, `Linux`, `X64` e `identifica-pinda-production`. Na organização, restrinja o grupo a este repositório e ao workflow `Prefeitura-de-Pindamonhangaba/Pindamonhangaba.IdentificaPinda/.github/workflows/production.yml@refs/heads/main`. PRs executam somente nos runners hospedados do GitHub.
+3. No environment `production`, permita deployments somente da `main`. Configure aprovação conforme a política da equipe.
+4. Prepare `/opt/Pindamonhangaba.IdentificaPinda/.env` com `COMPOSE_PROFILES=production`, banco externo e demais configurações. O usuário do runner precisa ler esse arquivo e acessar Docker. A pasta privada deve ficar fora do workspace do runner.
+5. Preserve o projeto Compose existente `identifica-pinda-production`, a rede `nginx-proxy-manager_default` e `certificates/postgres-root.crt`. O deploy combina `compose.yml`, `compose.proxy-manager.yml` e `compose.release.yml`, mantendo a rede do Nginx e a CA do PostgreSQL.
+6. Permita `packages: write/read` ao `GITHUB_TOKEN` e acesso do repositório ao package GHCR. Nenhum token permanente de registry é necessário.
 
-Cadastre o runner Linux na **organização**, atribua-o a esse grupo e adicione também o label `identifica-pinda-production`; siga as instruções atuais em **Settings → Actions → Runners → New self-hosted runner**. Instale como serviço e mantenha-o atualizado. O usuário do runner precisa acessar Docker e a pasta privada da aplicação. O workflow seleciona tanto o grupo quanto os labels.
+O workflow já usa os valores desta instalação. Variáveis opcionais do repositório ou do environment `production` permitem substituir:
 
-Se a organização não permitir restringir o grupo ao workflow/referência acima, não cadastre um runner persistente diretamente neste repositório público. Nesse caso, vamos definir juntos uma implantação por repositório privado de operações ou outra solução isolada antes de habilitar a produção. A restrição do environment não substitui a restrição do runner group.
+| Variável                     | Padrão                                         |
+| ---------------------------- | ---------------------------------------------- |
+| `PRODUCTION_DEPLOY_DIR`      | `/opt/Pindamonhangaba.IdentificaPinda`         |
+| `PRODUCTION_COMPOSE_PROJECT` | `identifica-pinda-production`                  |
+| `PRODUCTION_URL`             | `https://identifica.pindamonhangaba.sp.gov.br` |
 
-O host precisa alcançar GitHub/GHCR e o PostgreSQL externo. Não é necessário abrir SSH ao GitHub. O proxy HTTPS deve encaminhar para a porta local da aplicação, normalmente `127.0.0.1:3000`.
+Remova valores antigos dessas variáveis se divergirem da instalação. `PRODUCTION_DEPLOY_ENABLED` e `PRODUCTION_PLATFORM` não são mais utilizadas.
 
-Provisione uma pasta fora do workspace do runner, por exemplo `/opt/identifica-pinda`. Crie nela `.env` a partir do modelo, configure `COMPOSE_PROFILES=production`, `DATABASE_URL` externa, `APP_URL` HTTPS e os segredos. Mantenha o arquivo com permissões restritas (por exemplo, `0600` para seu proprietário, garantindo leitura ao usuário do runner). Guarde certificados em `certificates/` dentro dessa pasta, ou informe caminho absoluto em `INFOCONV_CERTIFICATES_DIR`.
+O `.env` privado continua sendo a fonte de segredos e configuração da aplicação. As variáveis do GitHub acima só identificam o destino; não substituem `APP_URL` ou `DATABASE_URL`.
 
-Credenciais e certificados **permanecem no servidor**; não são copiados para checkout, artefatos, imagens ou logs. Não cole senhas, connection strings ou chaves privadas no chat. O workflow usa `GITHUB_TOKEN` apenas para publicar/baixar imagens, com permissões limitadas por job, e encerra o login no registry ao finalizar.
+## Migrações e atualização
 
-## Configurar o repositório
+O deploy verifica configuração, conexão, certificados e migrações antes de substituir a aplicação. **Não aplica migrações automaticamente.** Se houver migrações pendentes, o job falha com a aplicação anterior preservada.
 
-Em **Settings → Environments**, crie `production` e limite deployments à branch `main`. Configure os responsáveis pela aprovação conforme a política da equipe. Essa restrição é importante: a verificação de branch no YAML não substitui a proteção do environment.
-
-Em **Settings → Secrets and variables → Actions → Variables**, configure variáveis de **repositório** (não apenas de environment):
-
-| Nome                         | Valor                                                                                               |
-| ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| `PRODUCTION_DEPLOY_ENABLED`  | Inicialmente `false`; mudar para `true` somente após preparar o servidor                            |
-| `PRODUCTION_DEPLOY_DIR`      | Pasta absoluta provisionada no servidor; exemplo `/opt/identifica-pinda`                            |
-| `PRODUCTION_URL`             | URL HTTPS pública, usada na identificação do environment; não substitui APP_URL no .env do servidor |
-| `PRODUCTION_PLATFORM`        | `linux/amd64` (padrão) ou `linux/arm64`; deve corresponder ao runner de produção                    |
-| `PRODUCTION_COMPOSE_PROJECT` | Nome estável da instalação, padrão `identifica-pinda`                                               |
-
-A compilação usa runner hospedado no GitHub compatível com a arquitetura escolhida. O workflow suporta imagens Linux amd64 e arm64; só é construída a arquitetura selecionada.
-
-Verifique em **Settings → Actions → General** se Actions e as actions oficiais utilizadas estão permitidas. O job de publicação precisa de `packages: write`; o job de deploy utiliza `packages: read`. Se a organização restringir criação/acesso a packages, ajuste essa política. O package publicado deve permitir acesso ao repositório para que seu `GITHUB_TOKEN` possa baixar as imagens. A visibilidade inicial do package não é alterada automaticamente pelo código.
-
-## Primeira publicação
-
-1. Mescle a PR da esteira e confira a CI da `main`.
-2. Mantenha `PRODUCTION_DEPLOY_ENABLED=false` e execute manualmente `Produção` na `main` para publicar as imagens.
-3. Na pasta provisionada do servidor, coloque os arquivos `compose.yml` e `compose.release.yml` da mesma revisão e um arquivo privado de referências `images.env` contendo `APP_IMAGE=ghcr.io/...@sha256:...` e `TOOLS_IMAGE=ghcr.io/...@sha256:...`. Os digests aparecem no resumo e nos steps de build/publicação do workflow; os nomes das tags incluem `sha-COMMIT` e `tools-sha-COMMIT`.
-4. Autentique o operador no GHCR quando o package for privado. Em seguida revise/aplique migrações e defina o primeiro administrador no Keycloak conforme [operação](operacao.md), usando os comandos abaixo com imagens publicadas.
-5. Confirme proxy TLS, DNS, conectividade, backup e certificados. Habilite `PRODUCTION_DEPLOY_ENABLED=true` e execute novamente `Produção` na `main`.
-
-Na pasta do servidor, com `.env`, `images.env` e os dois arquivos Compose:
+Após backup e revisão do SQL, use os arquivos da release indicada na execução que falhou, em `/opt/Pindamonhangaba.IdentificaPinda/releases/COMMIT-EXECUCAO-TENTATIVA/`. Execute na pasta privada, substituindo `RELEASE` pelo caminho dessa release:
 
 ```sh
-docker compose --env-file .env --env-file images.env -f compose.yml -f compose.release.yml pull app init tools
-docker compose --env-file .env --env-file images.env -f compose.yml -f compose.release.yml run --rm tools db:migrate
-docker compose --env-file .env --env-file images.env -f compose.yml -f compose.release.yml run --rm init
+docker compose --project-directory "$PWD" --env-file .env --env-file "$RELEASE/images.env" --project-name identifica-pinda-production -f "$RELEASE/compose.yml" -f "$RELEASE/compose.proxy-manager.yml" -f "$RELEASE/compose.release.yml" run --rm tools db:migrate
 ```
 
-Use o mesmo `--project-name` configurado em `PRODUCTION_COMPOSE_PROJECT` ao operar uma instalação existente. O deploy nunca aplica migrações automaticamente. Se a pré-verificação reprovar, a aplicação anterior não é substituída.
+Depois, reexecute o workflow na `main`. Não use `down -v` nem remova volumes para atualizar.
 
-## Diagnóstico e recuperação
+## Falhas e recuperação
 
-O script registra os arquivos Compose e referências imutáveis em `DEPLOY_DIR/releases/COMMIT-EXECUCAO-TENTATIVA/`. Depois de a aplicação ficar saudável, atualiza `DEPLOY_DIR/current-release`. A trava `.deploy.lock` também impede duas ativações manuais simultâneas.
+- **Testes:** consulte o step que falhou; nenhum deploy é iniciado.
+- **Build e publicação:** confira o log do Docker/GHCR e as permissões do package.
+- **Deploy aguardando runner:** confira o serviço, grupo e labels do runner na VM.
+- **Pré-deploy:** corrija o `.env`, conectividade, certificados ou migrações indicados, e reexecute.
+- **Saúde:** o Compose aguarda até 180 segundos. Se falhar, o workflow falha; não há rollback automático.
 
-O health check confirma HTTP dentro do container; valide separadamente a URL pública, o certificado TLS e o acesso dos usuários. Se a ativação falhar, o workflow falha e mantém o registro da última release aprovada; não há restauração automática de banco ou rollback automático de aplicação.
+Cada tentativa guarda os arquivos Compose e os digests em `releases/`. `current-release` só é atualizado após a aplicação ficar saudável. Para recuperar, use uma release anterior compatível com o banco, o mesmo `.env` e o mesmo nome de projeto. O registro anterior não significa que o container anterior continuou rodando se a falha ocorreu durante a ativação.
 
-Para recuperar, selecione uma release anterior conhecida e compatível com o schema atual, utilize seus arquivos Compose e `images.env`, o `.env` privado atual e o mesmo nome de projeto. Execute pré-verificação e subida com imagens publicadas. Se a versão antiga não for compatível com as migrações já aplicadas, siga o plano de recuperação do banco após avaliar backup/restauração. Não execute `down -v`, `prune`, migração destrutiva ou remoção de releases como atualização.
+O health check verifica o container. Confira também HTTPS público e login institucional após publicar. Veja [produção da Prefeitura](producao-identifica.md) e [operação](operacao.md) para infraestrutura e recuperação.
 
-## Referências
-
-- [GitHub: publicação de imagens Docker](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images).
-- [GitHub: environments e regras de implantação](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments).
-- [GitHub: uso seguro de Actions](https://docs.github.com/en/actions/reference/security/secure-use).
-
-- [GitHub: restringir acesso a grupos de runners](https://docs.github.com/en/enterprise-cloud@latest/actions/how-tos/manage-runners/self-hosted-runners/manage-access).
+Referências: [workflows reutilizáveis](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows), [publicação Docker no GitHub](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images) e [acesso a grupos de runners](https://docs.github.com/en/enterprise-cloud@latest/actions/how-tos/manage-runners/self-hosted-runners/manage-access).
