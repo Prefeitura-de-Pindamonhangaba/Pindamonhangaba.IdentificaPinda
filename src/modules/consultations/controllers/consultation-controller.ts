@@ -47,9 +47,11 @@ export async function postConsultation(request: Request) {
           message:
             error.code === "forbidden"
               ? "Acesso não autorizado."
-              : error.code === "monthly_limit"
-                ? "Limite de consultas atingido. Solicite ao administrador a liberação para continuar."
-                : "Limite de consultas atingido. Aguarde antes de continuar.",
+              : error.code === "personal_monthly_limit"
+                ? "Seu limite mensal de consultas ao Infoconv foi atingido."
+                : error.code === "monthly_limit"
+                  ? "Limite de consultas atingido. Solicite ao administrador a liberação para continuar."
+                  : "Limite de consultas atingido. Aguarde antes de continuar.",
         },
         error.code === "forbidden" ? 403 : 429,
         error.code === "rate_limit" ? { "Retry-After": "60" } : undefined,

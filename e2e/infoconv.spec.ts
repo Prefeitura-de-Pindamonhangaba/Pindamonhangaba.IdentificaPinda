@@ -346,6 +346,44 @@ test("consultas concorrentes compartilham cache e excedente exige liberação fi
   ).toBe(403);
   await request.post("/api/auth/sign-out", { headers: { origin }, data: {} });
   await login(request, "admin");
+  const settingsPath = "/api/consultations/quota/settings";
+  const setLimit = (data: object) =>
+    request.put(settingsPath, { headers: { origin }, data });
+  try {
+    expect((await setLimit({ scope: "global", limit: 0 })).status()).toBe(200);
+    await expect(
+      withDocumentLock(db, otherKey, (repository) =>
+        consultDocument(repository, adapter, env, principal, otherInput),
+      ),
+    ).rejects.toThrow("monthly_limit");
+    expect((await setLimit({ scope: "global", limit: null })).status()).toBe(
+      200,
+    );
+    expect(
+      (
+        await setLimit({ scope: "user", userId: principal.id, limit: 0 })
+      ).status(),
+    ).toBe(200);
+    await expect(
+      withDocumentLock(db, otherKey, (repository) =>
+        consultDocument(repository, adapter, env, principal, otherInput),
+      ),
+    ).rejects.toThrow("personal_monthly_limit");
+    const cached = await withDocumentLock(db, key, (repository) =>
+      consultDocument(repository, adapter, env, principal, input),
+    );
+    expect(cached.origin).toBe("cache");
+    expect(calls).toBe(1);
+  } finally {
+    expect((await setLimit({ scope: "global", limit: null })).status()).toBe(
+      200,
+    );
+    expect(
+      (
+        await setLimit({ scope: "user", userId: principal.id, limit: null })
+      ).status(),
+    ).toBe(200);
+  }
   expect(
     (
       await request.post("/api/consultations/quota", {
@@ -440,7 +478,7 @@ test("administrador registra e revoga excedente com ciência de cobrança na int
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.getByText(/Teto deste mês: 10.025/)).toBeVisible();
+  await expect(page.getByText(/Franquia com excedente: 10.025/)).toBeVisible();
   await page.screenshot({
     path: ".local/infoconv-quota-preview.png",
     fullPage: true,
@@ -457,7 +495,7 @@ test("administrador registra e revoga excedente com ciência de cobrança na int
   await page
     .getByRole("button", { name: "Registrar liberação mensal", exact: true })
     .click();
-  await expect(page.getByText(/Teto deste mês: 10.000/)).toBeVisible();
+  await expect(page.getByText(/Franquia com excedente: 10.000/)).toBeVisible();
 });
 
 test("lote TXT, erros por item e exportação funcionam no navegador", async ({
@@ -639,7 +677,7 @@ test("troca de senha local permanece bloqueada mesmo com sessão válida", async
   expect(await changed.text()).not.toContain(password);
 });
 
-test("operador não acessa auditoria e usa consultas sem detalhes de cache", async ({
+test("operador acessa resumo e não recebe registros detalhados", async ({
   page,
 }) => {
   await login(page.request, "operator");
@@ -647,7 +685,7 @@ test("operador não acessa auditoria e usa consultas sem detalhes de cache", asy
   await expect(page.getByRole("link", { name: "Minha conta" })).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Auditoria de consultas" }),
-  ).toHaveCount(0);
+  ).toBeVisible();
   await expect(page.getByText(/cache|7 dias|base local/i)).toHaveCount(0);
   expect((await page.request.get("/api/consultations/audit")).status()).toBe(
     403,
@@ -655,7 +693,22 @@ test("operador não acessa auditoria e usa consultas sem detalhes de cache", asy
   await page.goto("/consultations/audit");
   await expect(
     page.getByRole("heading", { name: "Auditoria de consultas" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Consumo global do Infoconv" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Base local" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Registros da equipe" }),
   ).toHaveCount(0);
+  expect(
+    (
+      await page.request.put("/api/consultations/quota/settings", {
+        headers: { origin },
+        data: { scope: "global", limit: 1 },
+      })
+    ).status(),
+  ).toBe(403);
 });
 
 test("limpar dados remove documentos, finalidade, filtro e resultados da tela", async ({

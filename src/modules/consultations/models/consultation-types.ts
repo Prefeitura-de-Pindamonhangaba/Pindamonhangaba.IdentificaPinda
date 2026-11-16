@@ -31,6 +31,7 @@ export class ConsultationError extends Error {
       | "invalid_response"
       | "rate_limit"
       | "monthly_limit"
+      | "personal_monthly_limit"
       | "forbidden",
   ) {
     super(code);

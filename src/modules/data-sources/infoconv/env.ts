@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-const schema = z.object({
-  INFOCONV_TRANSPORT: z.literal("soap").default("soap"),
+const quotaSchema = z.object({
   INFOCONV_MONTHLY_LIMIT: z.preprocess(
     (value) => (value === "" ? undefined : value),
     z.coerce.number().int().positive().default(10000),
@@ -14,6 +13,9 @@ const schema = z.object({
     (value) => (value === "" ? undefined : value),
     z.coerce.number().int().positive().optional(),
   ),
+});
+const schema = quotaSchema.extend({
+  INFOCONV_TRANSPORT: z.literal("soap").default("soap"),
   INFOCONV_ENABLED: z.enum(["true", "false"]).default("false"),
   INFOCONV_CACHE_KEY: z.string().regex(/^[a-f\d]{64}$/i),
   INFOCONV_AUDIT_KEY: z.string().regex(/^[a-f\d]{64}$/i),
@@ -42,3 +44,9 @@ export function parseInfoconvEnvironment(
   return result.data;
 }
 export type InfoconvEnvironment = ReturnType<typeof parseInfoconvEnvironment>;
+
+export function readInfoconvMonthlyLimit(
+  input: Record<string, string | undefined>,
+) {
+  return quotaSchema.parse(input).INFOCONV_MONTHLY_LIMIT;
+}

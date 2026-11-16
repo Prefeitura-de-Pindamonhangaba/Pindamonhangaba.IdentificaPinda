@@ -36,3 +36,27 @@ export const quotaApproval = pgTable(
     ),
   ],
 );
+export const globalQuota = pgTable(
+  "infoconv_global_quota",
+  {
+    id: integer("id").primaryKey().default(1),
+    limit: integer("monthly_limit").notNull(),
+  },
+  (table) => [
+    check("infoconv_global_quota_singleton", sql`${table.id} = 1`),
+    check("infoconv_global_quota_nonnegative", sql`${table.limit} >= 0`),
+  ],
+);
+
+export const userQuota = pgTable(
+  "infoconv_user_quota",
+  {
+    userId: uuid("user_id")
+      .primaryKey()
+      .references(() => user.id),
+    limit: integer("monthly_limit").notNull(),
+  },
+  (table) => [
+    check("infoconv_user_quota_nonnegative", sql`${table.limit} >= 0`),
+  ],
+);

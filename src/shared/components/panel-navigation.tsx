@@ -16,7 +16,7 @@ export function PanelNavigation({
     {
       href: "/consultations/audit",
       label: "Auditoria de consultas",
-      visible: admin,
+      visible: canConsult,
     },
     { href: "/admin/users", label: "Servidores e acessos", visible: admin },
     { href: "/admin/references", label: "Domínios e códigos", visible: admin },

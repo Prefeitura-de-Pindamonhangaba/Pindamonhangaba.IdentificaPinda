@@ -1,3 +1,4 @@
+import { readGlobalQuota, readUserQuota } from "./quota-settings-repository";
 import { and, desc, eq, gt, gte, inArray, lte, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { consultationAudit, consultationCache } from "./consultation-schema";
@@ -74,13 +75,21 @@ export function createConsultationRepository(database: Executor) {
         await database.execute(
           sql`select pg_advisory_xact_lock(hashtext('infoconv:quota'))`,
         );
-        if (monthlyLimit || kindMonthlyLimit) {
+        const globalCap = await readGlobalQuota(database);
+        const personalCap = await readUserQuota(database, value.userId);
+        if (
+          monthlyLimit ||
+          kindMonthlyLimit ||
+          globalCap !== null ||
+          personalCap !== null
+        ) {
           const month = new Date();
           month.setUTCDate(1);
           month.setUTCHours(0, 0, 0, 0);
           const [usage] = await database
             .select({
               total: sql<number>`count(*)::int`,
+              personal: sql<number>`count(*) filter (where ${consultationAudit.userId} = ${value.userId})::int`,
               kind: sql<number>`count(*) filter (where ${consultationAudit.kind} = ${value.kind})::int`,
             })
             .from(consultationAudit)
@@ -90,7 +99,10 @@ export function createConsultationRepository(database: Executor) {
                 gte(consultationAudit.createdAt, month),
               ),
             );
+          if (personalCap !== null && usage.personal >= personalCap)
+            throw new ConsultationError("personal_monthly_limit");
           if (
+            (globalCap !== null && usage.total >= globalCap) ||
             (monthlyLimit &&
               usage.total >=
                 monthlyLimit +
@@ -155,10 +167,8 @@ export function createConsultationRepository(database: Executor) {
         .orderBy(desc(consultationAudit.createdAt))
         .limit(250);
     },
-    async usage() {
-      const month = new Date();
-      month.setUTCDate(1);
-      month.setUTCHours(0, 0, 0, 0);
+    async usage(userId?: string, start?: Date) {
+      const month = start ?? new Date(currentQuotaMonth() + "-01T00:00:00Z");
       return database
         .select({
           kind: consultationAudit.kind,
@@ -166,7 +176,12 @@ export function createConsultationRepository(database: Executor) {
           count: sql<number>`count(*)::int`,
         })
         .from(consultationAudit)
-        .where(gte(consultationAudit.createdAt, month))
+        .where(
+          and(
+            gte(consultationAudit.createdAt, month),
+            userId ? eq(consultationAudit.userId, userId) : undefined,
+          ),
+        )
         .groupBy(consultationAudit.kind, consultationAudit.origin);
     },
   };

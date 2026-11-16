@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 type Quota = {
   month: string;
   included: number;
@@ -13,6 +14,7 @@ type Quota = {
   }[];
 };
 export function QuotaView() {
+  const router = useRouter();
   const [quota, setQuota] = useState<Quota>();
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
@@ -54,6 +56,7 @@ export function QuotaView() {
       }
       setQuota(await response.json());
       form.reset();
+      router.refresh();
       setMessage("Liberação mensal atualizada e registrada na auditoria.");
     } catch (error) {
       setMessage(
@@ -74,14 +77,14 @@ export function QuotaView() {
       <p>
         Franquia conjunta CPF/CNPJ: {quota.included.toLocaleString("pt-BR")}{" "}
         consultas. Excedente autorizado:{" "}
-        {quota.additional.toLocaleString("pt-BR")}. Teto deste mês:{" "}
+        {quota.additional.toLocaleString("pt-BR")}. Franquia com excedente:{" "}
         {(quota.included + quota.additional).toLocaleString("pt-BR")}.
       </p>
       <p>
         Acima da franquia há cobrança adicional. O sistema bloqueia novas
-        chamadas ao SERPRO no teto autorizado; dados válidos na base local
-        continuam disponíveis. A liberação vale somente para este mês e não é
-        renovada automaticamente.
+        chamadas ao SERPRO conforme os limites exibidos no painel. Dados válidos
+        na base local continuam disponíveis. A liberação vale somente para este
+        mês e não é renovada automaticamente.
       </p>
       <form onSubmit={submit} aria-busy={pending}>
         <label htmlFor="quota-additional">
