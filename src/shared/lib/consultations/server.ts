@@ -1,7 +1,10 @@
 import "server-only";
 import { getDatabase } from "@/shared/lib/db/client";
 import { type Principal } from "@/modules/auth/services/access-service";
-import { parseInfoconvEnvironment } from "@/modules/data-sources/infoconv/env";
+import {
+  parseInfoconvEnvironment,
+  readInfoconvMonthlyLimit,
+} from "@/modules/data-sources/infoconv/env";
 import { createInfoconvAdapter } from "@/modules/data-sources/infoconv/adapter-factory";
 import {
   createConsultationRepository,
@@ -22,11 +25,26 @@ import {
   readQuota,
 } from "@/modules/consultations/services/quota-service";
 
+import { readAdditionalAllowance } from "@/modules/consultations/models/quota-repository";
+import {
+  createQuotaSettingsRepository,
+  readGlobalQuota,
+  readUserQuota,
+} from "@/modules/consultations/models/quota-settings-repository";
+import {
+  summarizeUsage,
+  saveQuotaSettings,
+} from "@/modules/consultations/services/usage-service";
+import { currentQuotaMonth } from "@/modules/consultations/services/quota-policy";
+import type { QuotaSettings } from "@/modules/consultations/schemas/quota-settings-schema";
+import { canAccess } from "@/modules/auth/services/access-service";
+import { ConsultationError } from "@/modules/consultations/models/consultation-types";
+
 export async function getMonthlyQuota(principal: Principal) {
   return readQuota(
     createQuotaRepository(getDatabase()),
     principal,
-    parseInfoconvEnvironment(process.env).INFOCONV_MONTHLY_LIMIT,
+    readInfoconvMonthlyLimit(process.env),
   );
 }
 export async function setMonthlyQuota(principal: Principal, input: unknown) {
@@ -80,5 +98,45 @@ export async function discloseConsultationResults(
     principal.id,
     format === "csv" ? "consultations.exported" : "consultations.printed",
     results.map((result) => result.id),
+  );
+}
+export async function getUsageDashboard(principal: Principal) {
+  if (!canAccess(principal, "consultations:read"))
+    throw new ConsultationError("forbidden");
+  const db = getDatabase();
+  const now = new Date();
+  const [global, personal, additional] = await Promise.all([
+    readGlobalQuota(db),
+    readUserQuota(db, principal.id),
+    readAdditionalAllowance(db, currentQuotaMonth(now)),
+  ]);
+  const summary = await summarizeUsage(
+    principal,
+    createConsultationRepository(db),
+    {
+      contracted: readInfoconvMonthlyLimit(process.env),
+      global,
+      personal,
+      additional,
+    },
+    now,
+  );
+  return {
+    summary,
+    global,
+    users: summary.admin
+      ? await createQuotaSettingsRepository(db).listUsers()
+      : [],
+  };
+}
+
+export async function updateQuotaSettings(
+  principal: Principal,
+  input: QuotaSettings,
+) {
+  return saveQuotaSettings(
+    createQuotaSettingsRepository(getDatabase()),
+    principal,
+    input,
   );
 }

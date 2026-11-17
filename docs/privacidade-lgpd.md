@@ -41,7 +41,7 @@ A limpeza periódica remove registros operacionais vencidos, não contas nem aud
 
 ## Controles revisados
 
-- Autorização central no servidor e papéis obtidos de ID token validado; ausência de permissão nega acesso. A consulta exige finalidade e permissão por fonte/tipo. A atualização forçada e a auditoria continuam administrativas.
+- Autorização central no servidor e papéis obtidos de ID token validado; ausência de permissão nega acesso. A consulta exige finalidade e permissão por fonte/tipo. A atualização forçada e os registros detalhados da auditoria continuam administrativos. Operadores visualizam apenas seus totais e o consumo global agregado do Infoconv.
 - Exportações recusam registros de outro usuário, assinaturas alteradas, IDs repetidos, datas inválidas/futuras e resultados vencidos. A auditoria da exportação registra IDs de correlação, não CPF, nome ou a resposta.
 - A API de auditoria não entrega o HMAC do documento, pois a interface não precisa dele. Erros técnicos e logs não recebem respostas cadastrais, credenciais ou tokens.
 - A resposta pública de sessão entrega somente IDs, nome e expiração. Token de sessão, IP, User-Agent e atributos internos não são enviados novamente em JSON. A API interna do SDK permanece disponível ao servidor.

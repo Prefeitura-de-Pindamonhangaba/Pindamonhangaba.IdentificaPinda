@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { QuotaView } from "./quota-view";
 
 type AuditRow = {
   id: string;
@@ -49,20 +48,14 @@ export function AuditView() {
   }, []);
   return (
     <>
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">Rastreabilidade</span>
-          <h1>Auditoria de consultas</h1>
-          <p>
-            Últimos 250 registros autorizados. As respostas cadastrais não fazem
-            parte da auditoria.
-          </p>
-        </div>
-      </div>
-      <QuotaView />
+      <h2>Registros da equipe</h2>
+      <p>
+        Últimos 250 registros. As respostas cadastrais não fazem parte da
+        auditoria.
+      </p>
       {usage.length > 0 && (
-        <section className="usage-summary">
-          <h2>Uso no mês atual · UTC</h2>
+        <details className="usage-summary">
+          <summary>Contagem detalhada por origem no mês atual</summary>
           <p>
             Contagem desta aplicação; não representa o extrato de faturamento do
             SERPRO.
@@ -87,7 +80,7 @@ export function AuditView() {
               </tbody>
             </table>
           </div>
-        </section>
+        </details>
       )}
       <label htmlFor="audit-filter">
         Buscar por finalidade, documento protegido ou correlação

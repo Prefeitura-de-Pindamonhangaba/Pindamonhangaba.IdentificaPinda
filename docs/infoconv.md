@@ -198,3 +198,11 @@ Os resultados são agrupados em identificação, cadastro/atividade, endereço, 
 Testes unitários cobrem contratos, validação documental, criptografia, adulteração, validade de cache, atualização forçada, exportação e erros. O teste SOAP usa os WSDL oficiais contra servidor HTTP exclusivamente local com dados fictícios. O Playwright usa PostgreSQL local isolado com sufixo `_test` e adapter fictício, sem certificado real e sem chamadas cadastrais ao SERPRO.
 
 O único acesso autenticado ao serviço oficial durante o desenvolvimento foi a obtenção dos WSDL. Consultas reais de CPF/CNPJ não são usadas como teste para evitar consumo desnecessário e exposição de dados pessoais.
+
+## Painel de consumo e limites
+
+O painel **Auditoria de consultas** mostra ao operador suas próprias consultas por origem e tipo no mês UTC. O medidor global compara as chamadas contabilizadas na origem SERPRO de toda a equipe com o teto efetivo. Respostas da base local aparecem em um gráfico separado e não consomem franquia. Os registros detalhados, os filtros e o histórico de liberações ficam disponíveis aos administradores.
+
+O administrador pode definir um teto operacional global e um teto para cada usuário. Os valores persistem de um mês para outro e as contagens reiniciam na virada do mês UTC. Um campo vazio restaura o padrão e zero impede novas chamadas no respectivo escopo. O teto global efetivo é o menor entre o teto operacional configurado e a franquia contratada somada ao excedente autorizado. Continuam valendo os limites por tipo quando configurados. Limites individuais não reservam uma parte da franquia global.
+
+A migração aditiva `0005_infoconv_quota_limits.sql` deve ser aplicada antes do deploy em produção, conforme [operação](operacao.md). Sem limites cadastrados, permanecem as regras anteriores da franquia.

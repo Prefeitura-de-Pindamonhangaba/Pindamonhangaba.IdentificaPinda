@@ -892,3 +892,73 @@ thead {
 .privacy-notice-section p {
   max-width: 80ch;
 }
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 16px;
+  margin-block: 16px;
+}
+
+.usage-meter {
+  padding: 16px;
+  background: var(--color-surface-info);
+  border: 1px solid var(--color-border-light);
+}
+
+.usage-meter h3 {
+  margin-top: 0;
+}
+
+.usage-total {
+  font-size: 2rem;
+}
+
+.usage-meter meter {
+  width: 100%;
+  accent-color: var(--color-secondary-blue);
+}
+
+.usage-track {
+  display: flex;
+  min-height: 12px;
+  background: var(--color-border-light);
+  margin-block: 8px;
+}
+
+.usage-cpf {
+  background: var(--color-secondary-blue);
+}
+
+.usage-cnpj {
+  background: var(--color-accent-orange);
+}
+
+.usage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.usage-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 0.65em;
+  height: 0.65em;
+  margin-inline-end: 0.4em;
+  background: var(--color-secondary-blue);
+}
+
+.usage-legend span:nth-child(2)::before {
+  background: var(--color-accent-orange);
+}
+
+.limit-form,
+.quota-users {
+  display: grid;
+  gap: 8px;
+  margin-block: 12px;
+}
+
+.limit-form {
+  max-width: 360px;
+}
